@@ -1,3 +1,10 @@
+--Extent methods for standard libraries
+string.at=function(self,index)
+	return self:sub(index,index)
+end
+string.isdigit=function(char)
+	return char>="0" and char<="9"
+end
 --A collection of actions provided by G-series Lua API
 Action={
 	Debug={
@@ -43,7 +50,7 @@ Action={
 				end
 			end
 		end,
-		ClickParallelly=function (self,keys)
+		Click=function (self,keys)
 			return function()
 				for index,value in ipairs(keys) do
 					PressAndReleaseKey(value)
@@ -78,7 +85,7 @@ Action={
 					end
 				end
 			end,
-			ClickParallelly=function (self,keys)
+			Click=function (self,keys)
 				return function()
 					for index,value in ipairs(keys) do
 						PressAndReleaseMouseButton(value)
@@ -132,6 +139,13 @@ function EncodeButton(button)
 		return string.char(button+55)
 	end
 end
+function DecodeButton(buttonCode)
+	if string.isdigit(buttonCode) then
+		return string.byte(buttonCode)-48
+	else
+		return string.byte(buttonCode)-55
+	end
+end
 CombinedEventHandler={
 	PressedButtons="",
 	Event={
@@ -155,7 +169,7 @@ CombinedEventHandler={
 			--Check whether current event is a leaf event
 			local isLeaf=true
 			for name in pairs(self.List) do
-				if string.sub(name,1,#identifier)==identifier then
+				if name:sub(1,#identifier)==identifier then
 					isLeaf=false
 					break
 				end
@@ -163,7 +177,7 @@ CombinedEventHandler={
 			--Update prefixs if being a leaf event
 			if isLeaf then
 				for i=1,#identifier-1 do
-					local prefix=string.sub(identifier,1,i)
+					local prefix=identifier:sub(1,i)
 					if self.List[prefix] then
 						self.List[prefix].IsLeaf=false
 					end
@@ -203,24 +217,36 @@ CombinedEventHandler={
 			})
 		end,
 	},
+	SpecialHandlers={},
+	AddSpecialHandler=function(self,handle,auxiliary)
+		self.SpecialHandlers[#self.SpecialHandlers+1] = {
+			Handle=handle,
+			Auxiliary=auxiliary,
+		}
+	end,
 	PressButton=function(self,button)
+		for i=1,#self.SpecialHandlers do
+			self.SpecialHandlers[i]:Handle("press",button,self.PressedButtons)
+		end
 		self.PressedButtons=self.PressedButtons..EncodeButton(button)
         self.Event.Current=self.PressedButtons
 		local event=self.Event.List[self.Event.Current]
-		if event and event.IsLeaf and event.Action.Pressed then
+		if event and event.Action.Pressed then
 			event.Action.Pressed()
 		end
 	end,
 	ReleaseButton=function(self,button)
-		local event=self.Event.List[self.Event.Current]
-		if not (self.Event.Current=="") and event and event.Action.Released then
-			event.Action.Released()
-			self.Event.Current=nil
+		for i=1,#self.SpecialHandlers do
+			self.SpecialHandlers[i]:Handle("release",button,self.PressedButtons)
 		end
-		local buttonCode=EncodeButton(button)
-		local startIndex=string.find(self.PressedButtons,buttonCode)
-		if startIndex then
-			self.PressedButtons=string.sub(self.PressedButtons,1,startIndex-1)
+		local event=self.Event.List[self.Event.Current]
+		if event and event.Action.Released then
+			event.Action.Released()
+		end
+		self.Event.Current=""
+		local position=self.PressedButtons:find(EncodeButton(button))
+		if position then
+			self.PressedButtons=self.PressedButtons:sub(1,position-1)..self.PressedButtons:sub(position+1)
 		end
 	end
 }
