@@ -1,5 +1,5 @@
 --A collection of actions provided by G-series Lua API
-CommonAction={
+Action={
 	Debug={
 		Print=function(self,...)
 			local args={...}
@@ -18,24 +18,21 @@ CommonAction={
 		end,
 	},
 	Keyboard={
-		Press=function (self,...)
-			local keys={...}
+		Press=function (self,keys)
 			return function()
 				for index,value in ipairs(keys) do
 					PressKey(value)
 				end
 			end
 		end,
-		Release=function (self,...)
-			local keys={...}
+		Release=function (self,keys)
 			return function()
 				for index,value in ipairs(keys) do
 					ReleaseKey(value)
 				end
 			end
 		end,
-		ClickNestedly=function (self,...)
-			local keys={...}
+		ClickNestedly=function (self,keys)
 			return function()
 				local length=#keys
 				for i=1,length do
@@ -46,8 +43,7 @@ CommonAction={
 				end
 			end
 		end,
-		ClickParallelly=function (self,...)
-			local keys={...}
+		ClickParallelly=function (self,keys)
 			return function()
 				for index,value in ipairs(keys) do
 					PressAndReleaseKey(value)
@@ -57,24 +53,21 @@ CommonAction={
 	},
 	Mouse={
 		Button={
-			Press=function (self,...)
-				local keys={...}
+			Press=function (self,keys)
 				return function()
 					for index,value in ipairs(keys) do
 						PressMouseButton(value)
 					end
 				end
 			end,
-			Release=function (self,...)
-				local keys={...}
+			Release=function (self,keys)
 				return function()
 					for index,value in ipairs(keys) do
 						ReleaseMouseButton(value)
 					end
 				end
 			end,
-			ClickNestedly=function (self,...)
-				local keys={...}
+			ClickNestedly=function (self,keys)
 				return function()
 					local length=#keys
 					for i=1,length do
@@ -85,8 +78,7 @@ CommonAction={
 					end
 				end
 			end,
-			ClickParallelly=function (self,...)
-				local keys={...}
+			ClickParallelly=function (self,keys)
 				return function()
 					for index,value in ipairs(keys) do
 						PressAndReleaseMouseButton(value)
@@ -119,27 +111,6 @@ CommonAction={
 				end
 			end,
 		},
-		DPI={
-			CurrentDPI=3000,
-			SetTo=function(self,dpi)
-				return function()
-					self.CurrentDPI=dpi
-					SetMouseDPITable({self.CurrentDPI})
-				end
-			end,
-			Increase=function(self,delta)
-				return function()
-					self.CurrentDPI=self.CurrentDPI+delta
-					SetMouseDPITable({self.CurrentDPI})
-				end
-			end,
-			Decrease=function(self,delta)
-				return function()
-					self.CurrentDPI=self.CurrentDPI-delta
-					SetMouseDPITable({self.CurrentDPI})
-				end
-			end,
-		}
 	},
 	Macro={
 		AbortOtherMacrosBeforePlay=false,
@@ -154,76 +125,106 @@ CommonAction={
 	},
 }
 --Event handler for combined key event
+function EncodeButton(button)
+	if button<10 then
+		return string.char(button+48)
+	else
+		return string.char(button+55)
+	end
+end
 CombinedEventHandler={
-	EventList={},
 	PressedButtons="",
-	CurrentEvent="",
-	EncodeButtonCode=function(button)
-		if button<10 then
-			return string.char(button+48)
-		else
-			return string.char(button+55)
-		end
-	end,
-	RegisterEvent=function(self,action,...)
-		--Get identifier
-		local keys={...}
-		local length=#keys
-		if length==0 then
-			return false
-		end
-		local identifier=""
-		for i=1,length do
-			identifier=identifier..self.EncodeButtonCode(keys[i])
-		end
-		--Event already exists
-		if not self.EventList[identifier]==nil then
-			self.EventList[identifier].Action=action
-			return true
-		end
-		--Check whether current event is a leaf event
-		local isLeaf=true
-		for name in pairs(self.EventList) do
-			if string.sub(name,1,#identifier)==identifier then
-				isLeaf=false
-				break
+	Event={
+		List={},
+		Current="",
+		Register=function(self,combination,action)
+			--Get identifier
+			local length=#combination
+			if length==0 then
+				return false
 			end
-		end
-		--Update prefixs if being a leaf event
-		if isLeaf then
-			for i=1,#identifier-1 do
-				local prefix=string.sub(identifier,1,i)
-				if self.EventList[prefix] then
-					self.EventList[prefix].IsLeaf=false
+			local identifier=""
+			for i=1,length do
+				identifier=identifier..EncodeButton(combination[i])
+			end
+			--Event already exists
+			if self.List[identifier] then
+				self.List[identifier].Action=action
+				return true
+			end
+			--Check whether current event is a leaf event
+			local isLeaf=true
+			for name in pairs(self.List) do
+				if string.sub(name,1,#identifier)==identifier then
+					isLeaf=false
+					break
 				end
 			end
-		end
-		--Add event to EventList
-		self.EventList[identifier]={IsLeaf=isLeaf,Action=action}
-		return true
-	end,
+			--Update prefixs if being a leaf event
+			if isLeaf then
+				for i=1,#identifier-1 do
+					local prefix=string.sub(identifier,1,i)
+					if self.List[prefix] then
+						self.List[prefix].IsLeaf=false
+					end
+				end
+			end
+			--Add event to EventList
+			self.List[identifier]={IsLeaf=isLeaf,Action=action}
+			return true
+		end,
+		RegisterPressed=function(self,combination,pAction)
+			self:Register(combination,{Pressed=pAction})
+		end,
+		RegisterReleased=function(self,combination,rAction)
+			self:Register(combination,{Released=rAction})
+		end,
+		RegisterPressedAndReleassed=function(self,combination,pAction,rAction)
+			self:Register(combination,{Pressed=pAction,Released=rAction})
+		end,
+		RegisterKeyboradBind=function(self,srcCombination,dstCombination)
+			local reversedDstCombination={}
+			for i=1,#dstCombination do
+				reversedDstCombination[i]=dstCombination[#dstCombination-i+1]
+			end
+			self:Register(srcCombination,{
+				Pressed=Action.Keyboard:Press(dstCombination),
+				Released=Action.Keyboard:Release(reversedDstCombination),
+			})
+		end,
+		RegisterMouseBind=function(self,srcCombination,dstCombination)
+			local reversedDstCombination={}
+			for i=1,#dstCombination do
+				reversedDstCombination[i]=dstCombination[#dstCombination-i+1]
+			end
+			self:Register(srcCombination,{
+				Pressed=Action.Mouse.Button:Press(dstCombination),
+				Released=Action.Mouse.Button:Release(reversedDstCombination),
+			})
+		end,
+	},
 	PressButton=function(self,button)
-		self.PressedButtons=self.PressedButtons..self.EncodeButtonCode(button)
-        self.CurrentEvent=self.PressedButtons
-        local event=self.EventList[self.CurrentEvent]
+		self.PressedButtons=self.PressedButtons..EncodeButton(button)
+        self.Event.Current=self.PressedButtons
+		local event=self.Event.List[self.Event.Current]
 		if event and event.IsLeaf and event.Action.Pressed then
 			event.Action.Pressed()
 		end
 	end,
-    ReleaseButton=function(self,button)
-        local event=self.EventList[self.CurrentEvent]
-		if not (self.CurrentEvent=="") and event and event.Action.Released then
+	ReleaseButton=function(self,button)
+		local event=self.Event.List[self.Event.Current]
+		if not (self.Event.Current=="") and event and event.Action.Released then
 			event.Action.Released()
-			self.CurrentEvent=nil
+			self.Event.Current=nil
 		end
-		local buttonCode=self.EncodeButtonCode(button)
+		local buttonCode=EncodeButton(button)
 		local startIndex=string.find(self.PressedButtons,buttonCode)
 		if startIndex then
 			self.PressedButtons=string.sub(self.PressedButtons,1,startIndex-1)
 		end
 	end
 }
---Basic Event handler provided by G-series Lua API
+--Basic event handler provided by G-series Lua API
 Event={
 	Pressed="MOUSE_BUTTON_PRESSED",
 	Released="MOUSE_BUTTON_RELEASED",
@@ -237,8 +238,7 @@ function OnEvent(event, arg)
 	elseif event==Event.Released then
 		CombinedEventHandler:ReleaseButton(arg)
 	elseif event==Event.Activated then
-		CommonAction.Mouse.DPI.CurrentDPI=Settings.DefaultDPI
-		CommonAction.Mouse.Location.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
+		Action.Mouse.Location.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
 	end
 end
 --Enums for some mouse action parameters
@@ -255,25 +255,22 @@ MouseButton={
 	WheelRight=10,
 	WheelLeft=11,
 }
-BasicMouseFunction={
+MouseFunction={
 	PrimaryClick=1,
 	MiddleClick=2,
 	SecondaryClick=3,
 	Forward=4,
 	Back=5
 }
+function RegisterBasicFunctions()
+	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.Primary},{MouseFunction.PrimaryClick})
+	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.Secondary},{MouseFunction.SecondaryClick})
+	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.Middle},{MouseFunction.MiddleClick})
+	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.SideMiddle},{MouseFunction.Forward})
+	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.SideBack},{MouseFunction.Back})
+end
 --Customize combined key actions here
 Settings={
-	DefaultDPI=3000,
-	ScreenResolution={1920,1080}
+	ScreenResolution={1920,1080},
 }
-CombinedEventHandler:RegisterEvent({
-	Release=CommonAction.Mouse.Button:ClickNestedly(BasicMouseFunction.SecondaryClick),
-},MouseButton.Secondary)
-CombinedEventHandler:RegisterEvent({
-	Released=CommonAction.Keyboard:ClickNestedly("lctrl","c"),
-},MouseButton.SideFront,MouseButton.Primary)
-CombinedEventHandler:RegisterEvent({
-	Pressed=CommonAction.Keyboard:Press("lctrl","v"),
-	Released=CommonAction.Keyboard:Release("v","lctrl"),
-},MouseButton.SideFront,MouseButton.Secondary)
+CombinedEvent=CombinedEventHandler.Event
