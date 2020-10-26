@@ -24,100 +24,86 @@ Action={
 			end
 		end,
 	},
-	Keyboard={
-		Press=function (self,keys)
+	KeysAndButtons={
+		Press=function (self,keysAndButtons)
 			return function()
-				for index,value in ipairs(keys) do
-					PressKey(value)
+				for index,value in ipairs(keysAndButtons) do
+					if type(value)=="string" then
+						PressKey(value)
+					elseif type(value)=="number" then
+						PressMouseButton(value)
+					end
 				end
 			end
 		end,
-		Release=function (self,keys)
+		Release=function (self,keysAndButtons)
 			return function()
-				for index,value in ipairs(keys) do
-					ReleaseKey(value)
+				for index,value in ipairs(keysAndButtons) do
+					if type(value)=="string" then
+						ReleaseKey(value)
+					elseif type(value)=="number" then
+						ReleaseMouseButton(value)
+					end
 				end
 			end
 		end,
-		ClickNestedly=function (self,keys)
+		ClickNestedly=function (self,keysAndButtons)
 			return function()
-				local length=#keys
+				local length=#keysAndButtons
 				for i=1,length do
-					PressKey(keys[i])
+					local value=keysAndButtons[i]
+					if type(value)=="string" then
+						PressKey(value)
+					elseif type(value)=="number" then
+						PressMouseButton(value)
+					end
 				end
 				for i=length,1,-1 do
-					ReleaseKey(keys[i])
+					local value=keysAndButtons[i]
+					if type(value)=="string" then
+						ReleaseKey(value)
+					elseif type(value)=="number" then
+						ReleaseMouseButton(value)
+					end
 				end
 			end
 		end,
-		Click=function (self,keys)
+		Click=function (self,keysAndButtons)
 			return function()
-				for index,value in ipairs(keys) do
-					PressAndReleaseKey(value)
+				for index,value in ipairs(keysAndButtons) do
+					if type(value)=="string" then
+						PressAndReleaseKey(value)
+					elseif type(value)=="number" then
+						PressAndReleaseMouseButton(value)
+					end
 				end
 			end
 		end,
 	},
-	Mouse={
-		Button={
-			Press=function (self,keys)
-				return function()
-					for index,value in ipairs(keys) do
-						PressMouseButton(value)
-					end
-				end
-			end,
-			Release=function (self,keys)
-				return function()
-					for index,value in ipairs(keys) do
-						ReleaseMouseButton(value)
-					end
-				end
-			end,
-			ClickNestedly=function (self,keys)
-				return function()
-					local length=#keys
-					for i=1,length do
-						PressMouseButton(keys[i])
-					end
-					for i=length,1,-1 do
-						ReleaseMouseButton(keys[i])
-					end
-				end
-			end,
-			Click=function (self,keys)
-				return function()
-					for index,value in ipairs(keys) do
-						PressAndReleaseMouseButton(value)
-					end
-				end
-			end,
-		},
-		Wheel={
-			MoveUp=function(self,count)
-				return function()
-					MoveMouseWheel(count)
-				end
-			end,
-			MoveDown=function(self,count)
-				return function()
-					MoveMouseWheel(-count)
-				end
-			end,
-		},
-		Location={
-			Resolution={Width=1920,Height=1080},
-			Move=function(self,x,y)
-				return function()
-					MoveMouseRelative(x*self.Resolution.Width/65535,y*self.Resolution.Height/65535)
-				end
-			end,
-			MoveTo=function(self,x,y)
-				return function()
-					MoveMouseTo(x*self.Resolution.Width/65535,y*self.Resolution.Height/65535)
-				end
-			end,
-		},
+	Wheel={
+		MoveUp=function(self,count)
+			return function()
+				MoveMouseWheel(count)
+			end
+		end,
+		MoveDown=function(self,count)
+			return function()
+				MoveMouseWheel(-count)
+			end
+		end,
+	},
+	Cursor={
+		Resolution={Width=1920,Height=1080},
+		Move=function(self,x,y)
+			return function()
+				MoveMouseRelative(x*self.Resolution.Width/65535,y*self.Resolution.Height/65535)
+			end
+		end,
+		MoveTo=function(self,x,y)
+			return function()
+				MoveMouseTo(x*self.Resolution.Width/65535,y*self.Resolution.Height/65535)
+			end
+		end,
 	},
 	Macro={
 		AbortOtherMacrosBeforePlay=false,
@@ -196,26 +182,26 @@ CombinedEventHandler={
 		RegisterPressedAndReleassed=function(self,combination,pAction,rAction)
 			self:Register(combination,{Pressed=pAction,Released=rAction})
 		end,
-		RegisterKeyboradBind=function(self,srcCombination,dstCombination)
+		RegisterBind=function(self,srcCombination,dstCombination)
 			local reversedDstCombination={}
 			for i=1,#dstCombination do
 				reversedDstCombination[i]=dstCombination[#dstCombination-i+1]
 			end
 			self:Register(srcCombination,{
-				Pressed=Action.Keyboard:Press(dstCombination),
-				Released=Action.Keyboard:Release(reversedDstCombination),
+				Pressed=Action.KeysAndButtons:Press(dstCombination),
+				Released=Action.KeysAndButtons:Release(reversedDstCombination),
 			})
 		end,
-		RegisterMouseBind=function(self,srcCombination,dstCombination)
-			local reversedDstCombination={}
-			for i=1,#dstCombination do
-				reversedDstCombination[i]=dstCombination[#dstCombination-i+1]
-			end
+		RegisterReleasedBind=function(self,srcCombination,dstCombination)
 			self:Register(srcCombination,{
-				Pressed=Action.Mouse.Button:Press(dstCombination),
-				Released=Action.Mouse.Button:Release(reversedDstCombination),
+				Released=Action.KeysAndButtons:ClickNestedly(dstCombination),
 			})
 		end,
+		RegisterReleasedMacro=function(self,srcCombination,macroName)
+			self:Register(srcCombination,{
+				Released=Action.Macro:Play(macroName),
+			})
+		end
 	},
 	SpecialHandlers={},
 	AddSpecialHandler=function(self,handle,auxiliary)
@@ -264,7 +250,7 @@ function OnEvent(event, arg)
 	elseif event==Event.Released then
 		CombinedEventHandler:ReleaseButton(arg)
 	elseif event==Event.Activated then
-		Action.Mouse.Location.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
+		Action.Cursor.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
 	end
 end
 --Enums for some mouse action parameters
@@ -289,11 +275,11 @@ MouseFunction={
 	Back=5
 }
 function RegisterBasicFunctions()
-	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.Primary},{MouseFunction.PrimaryClick})
-	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.Secondary},{MouseFunction.SecondaryClick})
-	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.Middle},{MouseFunction.MiddleClick})
-	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.SideMiddle},{MouseFunction.Forward})
-	CombinedEventHandler.Event:RegisterMouseBind({MouseButton.SideBack},{MouseFunction.Back})
+	CombinedEventHandler.Event:RegisterBind({MouseButton.Primary},{MouseFunction.PrimaryClick})
+	CombinedEventHandler.Event:RegisterBind({MouseButton.Secondary},{MouseFunction.SecondaryClick})
+	CombinedEventHandler.Event:RegisterBind({MouseButton.Middle},{MouseFunction.MiddleClick})
+	CombinedEventHandler.Event:RegisterBind({MouseButton.SideMiddle},{MouseFunction.Forward})
+	CombinedEventHandler.Event:RegisterBind({MouseButton.SideBack},{MouseFunction.Back})
 end
 --Customize combined key actions here
 Settings={
