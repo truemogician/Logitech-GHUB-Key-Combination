@@ -5,6 +5,24 @@ end
 string.isdigit=function(char)
 	return char>="0" and char<="9"
 end
+table.reverse=function(list,i,j)
+	i=i or 1
+	j=j or #list
+	local tmp=nil
+	for index=i,i+(j-i)/2 do
+		tmp=list[index]
+		list[index]=list[j-index+i]
+		list[j-index+i]=tmp
+	end
+	return list
+end
+table.print=function(list)
+	local result=""
+	for i,v in ipairs(list) do
+		result=result.." "..v
+	end
+	print(result)
+end
 --A collection of actions provided by G-series Lua API
 Action={
 	Debug={
@@ -173,7 +191,7 @@ CombinedEventHandler={
 			self.List[identifier]={IsLeaf=isLeaf,Action=action}
 			return true
 		end,
-		RegisterPressed=function(self,combination,pAction)
+		RegisterPressed=function(self,combination,pAction,unorderedGroup)
 			self:Register(combination,{Pressed=pAction})
 		end,
 		RegisterReleased=function(self,combination,rAction)
@@ -215,10 +233,12 @@ CombinedEventHandler={
 			self.SpecialHandlers[i]:Handle("press",button,self.PressedButtons)
 		end
 		self.PressedButtons=self.PressedButtons..EncodeButton(button)
-        self.Event.Current=self.PressedButtons
-		local event=self.Event.List[self.Event.Current]
-		if event and event.Action.Pressed then
-			event.Action.Pressed()
+		local event=self.Event.List[self.PressedButtons]
+		if event then
+			self.Event.Current=self.PressedButtons
+			if event.Action.Pressed then
+				event.Action.Pressed()
+			end
 		end
 	end,
 	ReleaseButton=function(self,button)
@@ -226,10 +246,12 @@ CombinedEventHandler={
 			self.SpecialHandlers[i]:Handle("release",button,self.PressedButtons)
 		end
 		local event=self.Event.List[self.Event.Current]
-		if event and event.Action.Released then
-			event.Action.Released()
+		if event and self.Event.Current:find(EncodeButton(button)) then
+			if event.Action.Released then
+				event.Action.Released()
+			end
+			self.Event.Current=""
 		end
-		self.Event.Current=""
 		local position=self.PressedButtons:find(EncodeButton(button))
 		if position then
 			self.PressedButtons=self.PressedButtons:sub(1,position-1)..self.PressedButtons:sub(position+1)
