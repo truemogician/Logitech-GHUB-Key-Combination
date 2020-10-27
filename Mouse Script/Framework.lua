@@ -5,6 +5,13 @@ end
 string.isdigit=function(char)
 	return char>="0" and char<="9"
 end
+string.totable=function(self)
+	local result={}
+	for i=1,self:len() do
+		result[i]=self:at(i)
+	end
+	return result
+end
 table.reverse=function(list,i,j)
 	i=i or 1
 	j=j or #list
@@ -22,6 +29,24 @@ table.print=function(list)
 		result=result.." "..v
 	end
 	print(result)
+end
+table.copy=function(src)
+	local list={}
+	for key,value in pairs(src) do
+		if type(value)=="table" then
+			list[key]=table.copy(value)
+		else
+			list[key]=value
+		end
+	end
+	return list
+end
+table.tostring=function(list)
+	local result=""
+	for i,v in ipairs(list) do
+		result=result..v
+	end
+	return result
 end
 --A collection of actions provided by G-series Lua API
 Action={
@@ -150,75 +175,135 @@ function DecodeButton(buttonCode)
 		return string.byte(buttonCode)-55
 	end
 end
+function NextPermutation(list)
+	local length=#list
+	local k,l=0,0
+	for i=length-1,1,-1 do
+		if list[i]<list[i+1] then
+			k=i
+			break
+		end
+	end
+	if k==0 then
+		return false
+	end
+	for i=length,k+1,-1 do
+		if list[k]<list[i] then
+			l=i
+			break
+		end
+	end
+	local tmp=list[k]
+	list[k]=list[l]
+	list[l]=tmp
+	table.reverse(list,k+1,length)
+	return true
+end
 CombinedEventHandler={
 	PressedButtons="",
 	Event={
 		List={},
 		Current="",
-		Register=function(self,combination,action)
-			--Get identifier
-			local length=#combination
-			if length==0 then
-				return false
-			end
-			local identifier=""
-			for i=1,length do
-				identifier=identifier..EncodeButton(combination[i])
-			end
-			--Event already exists
-			if self.List[identifier] then
-				self.List[identifier].Action=action
-				return true
-			end
-			--Check whether current event is a leaf event
-			local isLeaf=true
-			for name in pairs(self.List) do
-				if name:sub(1,#identifier)==identifier then
-					isLeaf=false
-					break
+		Register=function(self,combination,action,unorderedGroup)
+			local unorderedGroupIndex
+			if unorderedGroup then
+				if type(unorderedGroup[1])=="number" then
+					unorderedGroup={unorderedGroup}
 				end
-			end
-			--Update prefixs if being a leaf event
-			if isLeaf then
-				for i=1,#identifier-1 do
-					local prefix=identifier:sub(1,i)
-					if self.List[prefix] then
-						self.List[prefix].IsLeaf=false
+				local indexTable={}
+				for i=1,#combination do
+					indexTable[combination[i]]=i
+				end
+				for i=1,#unorderedGroup do
+					for j=1,#unorderedGroup[i] do
+						unorderedGroup[i][j]=indexTable[unorderedGroup[i][j]]
 					end
 				end
+				for i=1,#unorderedGroup do
+					table.sort(unorderedGroup[i])
+				end
+				unorderedGroupIndex=table.copy(unorderedGroup)
 			end
-			--Add event to EventList
-			self.List[identifier]={IsLeaf=isLeaf,Action=action}
-			return true
+			--Get identifier
+			local identifier=table.tostring(combination)
+			local initialTable=identifier:totable()
+			while true do
+				--Event already exists
+				if self.List[identifier] then
+					self.List[identifier].Action=action
+				else
+					--Check whether current event is a leaf event
+					local isLeaf=true
+					for name in pairs(self.List) do
+						if name:sub(1,#identifier)==identifier then
+							isLeaf=false
+							break
+						end
+					end
+					--Update prefixs if being a leaf event
+					if isLeaf then
+						for i=1,#identifier-1 do
+							local prefix=identifier:sub(1,i)
+							if self.List[prefix] then
+								self.List[prefix].IsLeaf=false
+							end
+						end
+					end
+					--Add event to EventList
+					self.List[identifier]={IsLeaf=isLeaf,Action=action}
+				end
+				if unorderedGroup==nil then
+					break
+				end
+				local finished=true
+				for i=#unorderedGroup,1,-1 do
+					if NextPermutation(unorderedGroup[i]) then
+						finished=false
+						break
+					else
+						table.reverse(unorderedGroup[i])
+					end
+				end
+				if finished then
+					break
+				end
+				local identifierTable=table.copy(initialTable)
+				for i=1,#unorderedGroup do
+					for j=1,#unorderedGroup[i] do
+						identifierTable[unorderedGroupIndex[i][j]]=initialTable[unorderedGroup[i][j]]
+					end
+				end
+				identifier=table.tostring(identifierTable)
+			end
 		end,
 		RegisterPressed=function(self,combination,pAction,unorderedGroup)
-			self:Register(combination,{Pressed=pAction})
+			self:Register(combination,{Pressed=pAction},unorderedGroup)
 		end,
-		RegisterReleased=function(self,combination,rAction)
-			self:Register(combination,{Released=rAction})
+		RegisterReleased=function(self,combination,rAction,unorderedGroup)
+			self:Register(combination,{Released=rAction},unorderedGroup)
 		end,
-		RegisterPressedAndReleassed=function(self,combination,pAction,rAction)
-			self:Register(combination,{Pressed=pAction,Released=rAction})
+		RegisterPressedAndReleassed=function(self,combination,pAction,rAction,unorderedGroup)
+			self:Register(combination,{Pressed=pAction,Released=rAction},unorderedGroup)
 		end,
-		RegisterBind=function(self,srcCombination,dstCombination)
+		RegisterBind=function(self,srcCombination,dstCombination,unorderedGroup)
 			local reversedDstCombination={}
 			for i=1,#dstCombination do
 				reversedDstCombination[i]=dstCombination[#dstCombination-i+1]
 			end
 			self:Register(srcCombination,{
 				Pressed=Action.KeysAndButtons:Press(dstCombination),
-				Released=Action.KeysAndButtons:Release(reversedDstCombination),
-			})
+				Released=Action.KeysAndButtons:Release(reversedDstCombination)
+			},unorderedGroup)
 		end,
-		RegisterReleasedBind=function(self,srcCombination,dstCombination)
+		RegisterReleasedBind=function(self,srcCombination,dstCombination,unorderedGroup)
 			self:Register(srcCombination,{
 				Released=Action.KeysAndButtons:ClickNestedly(dstCombination),
-			})
+			},unorderedGroup)
 		end,
-		RegisterReleasedMacro=function(self,srcCombination,macroName)
+		RegisterReleasedMacro=function(self,srcCombination,macroName,unorderedGroup)
 			self:Register(srcCombination,{
 				Released=Action.Macro:Play(macroName),
-			})
+			},unorderedGroup)
 		end
 	},
 	SpecialHandlers={},
