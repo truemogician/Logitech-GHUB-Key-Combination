@@ -90,34 +90,60 @@ Action={
 				end
 			end
 		end,
-		ClickNestedly=function (self,keysAndButtons)
-			return function()
-				local length=#keysAndButtons
-				for i=1,length do
-					local value=keysAndButtons[i]
-					if type(value)=="string" then
-						PressKey(value)
-					elseif type(value)=="number" then
-						PressMouseButton(value)
+		Click=function(self,keysAndButtons)
+			local function ClickRecursively(t,depth)
+				if depth%2==1 then
+					for i,v in ipairs(t) do
+						if type(v)=="table" then
+							ClickRecursively(v,depth+1)
+						elseif type(v)=="number" then
+							PressMouseButton(v)
+						elseif type(v)=="string" then
+							PressKey(v)
+						end
 					end
-				end
-				for i=length,1,-1 do
-					local value=keysAndButtons[i]
-					if type(value)=="string" then
-						ReleaseKey(value)
-					elseif type(value)=="number" then
-						ReleaseMouseButton(value)
+					for i=#t,1,-1 do
+						local v=t[i]
+						if type(v)=="number" then
+							ReleaseMouseButton(v)
+						elseif type(v)=="string" then
+							ReleaseKey(v)
+						end
+					end
+				else
+					for i,v in ipairs(t) do
+						if type(v)=="table" then
+							ClickRecursively(v,depth+1)
+						elseif type(v)=="number" then
+							PressAndReleaseMouseButton(v)
+						elseif type(v)=="string" then
+							PressAndReleaseKey(v)
+						end
 					end
 				end
 			end
-		end,
-		Click=function (self,keysAndButtons)
 			return function()
-				for index,value in ipairs(keysAndButtons) do
-					if type(value)=="string" then
-						PressAndReleaseKey(value)
-					elseif type(value)=="number" then
-						PressAndReleaseMouseButton(value)
+				ClickRecursively(keysAndButtons,1)
+			end
+		end,
+		PressAndRelease=function(self,sequence)
+			return function()
+				local pressed={}
+				for index,value in ipairs(sequence) do
+					if pressed[value] then
+						if type(value)=="string" then
+							ReleaseKey(value)
+						elseif type(value)=="number" then
+							ReleaseMouseButton(value)
+						end
+						pressed[value]=false
+					else
+						if type(value)=="string" then
+							PressKey(value)
+						elseif type(value)=="number" then
+							PressMouseButton(value)
+						end
+						pressed[value]=true
 					end
 				end
 			end
@@ -304,7 +330,7 @@ CombinedEventHandler={
 		end,
 		RegisterReleasedBind=function(self,srcCombination,dstCombination,unorderedGroup)
 			self:Register(srcCombination,{
-				Released=Action.KeysAndButtons:ClickNestedly(dstCombination),
+				Released=Action.KeysAndButtons:Click(dstCombination),
 			},unorderedGroup)
 		end,
 		RegisterReleasedMacro=function(self,srcCombination,macroName,unorderedGroup)
