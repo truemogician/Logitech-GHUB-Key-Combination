@@ -159,6 +159,7 @@ Action={
 			end
 		end
 	},
+	
 }
 --Event handler for combined key event
 function EncodeButton(button)
@@ -225,8 +226,11 @@ CombinedEventHandler={
 				unorderedGroupIndex=table.copy(unorderedGroup)
 			end
 			--Get identifier
-			local identifier=table.tostring(combination)
-			local initialTable=identifier:totable()
+			local initialTable=table.copy(combination)
+			local identifier=""
+			for i,v in ipairs(combination) do
+				identifier=identifier..EncodeButton(v)
+			end
 			while true do
 				--Event already exists
 				if self.List[identifier] then
@@ -273,7 +277,10 @@ CombinedEventHandler={
 						identifierTable[unorderedGroupIndex[i][j]]=initialTable[unorderedGroup[i][j]]
 					end
 				end
-				identifier=table.tostring(identifierTable)
+				identifier=""
+				for i,v in ipairs(identifierTable) do
+					identifier=identifier..EncodeButton(v)
+				end
 			end
 		end,
 		RegisterPressed=function(self,combination,pAction,unorderedGroup)
@@ -381,15 +388,21 @@ MouseFunction={
 	Forward=4,
 	Back=5
 }
-function RegisterBasicFunctions()
-	CombinedEventHandler.Event:RegisterBind({MouseButton.Primary},{MouseFunction.PrimaryClick})
-	CombinedEventHandler.Event:RegisterBind({MouseButton.Secondary},{MouseFunction.SecondaryClick})
-	CombinedEventHandler.Event:RegisterBind({MouseButton.Middle},{MouseFunction.MiddleClick})
-	CombinedEventHandler.Event:RegisterBind({MouseButton.SideMiddle},{MouseFunction.Forward})
-	CombinedEventHandler.Event:RegisterBind({MouseButton.SideBack},{MouseFunction.Back})
-end
 --Customize combined key actions here
 Settings={
 	ScreenResolution={1920,1080},
 }
+CombinedEventHandler:AddSpecialHandler(function(self,event,button,pressedButtons)
+	if event=="release" and pressedButtons==MouseButton.Primary..MouseButton.Secondary then
+		Action.KeysAndButtons:Click({MouseFunction.SecondaryClick})()
+	end
+end)
 CombinedEvent=CombinedEventHandler.Event
+CombinedEvent:RegisterBind(
+	{MouseButton.Primary},
+	{MouseFunction.PrimaryClick}
+)
+CombinedEvent:RegisterReleasedBind(
+	{MouseButton.Secondary},
+	{MouseFunction.SecondaryClick}
+)
