@@ -48,23 +48,32 @@ function EnablePrimaryMouseButtonEvents(arg)
 		print("Primary mouse button events are disabled")
 	end
 end
+local FileMode=false
+local FilePath="Mouse Script\\Test Commands.txt"
+local file
 OnEvent(Event.Activated)
+if FileMode then
+	file=io.open(FilePath,"r")
+	io.input(file)
+end
 while true do
 	local line=io.read()
-	local space=line:find(" ")
-	local event,arg
-	if space==nil then
-		event=line
-		arg=nil
-	else
-		event=line:sub(1,space-1):lower()
-		arg=line:sub(space+1)
+	if line==nil then
+		io.input(io.stdin)
+		line=io.read()
 	end
-	if event=="press" then
-		OnEvent(Event.Pressed,MouseButton[arg])
-	elseif event=="release" then
-		OnEvent(Event.Released,MouseButton[arg])
-	elseif event=="deactive" then
+	local _,_,event,arg=line:find("([^%s]+)%s?([^%s]*)")
+	event=event:lower()
+	if arg:isnumber() then
+		arg=arg:tonumber()
+	else
+		arg=MouseButton[arg]
+	end
+	if event=="press" or event=="p" then
+		OnEvent(Event.Pressed,arg)
+	elseif event=="release" or event=="r" then
+		OnEvent(Event.Released,arg)
+	elseif event=="deactive" or event=="d" then
 		OnEvent(Event.Deactivated)
 		break
 	end
