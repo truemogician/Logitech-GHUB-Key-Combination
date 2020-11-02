@@ -5,6 +5,29 @@ end
 string.isdigit=function(char)
 	return char>="0" and char<="9"
 end
+string.isnumber=function(self,i,j)
+	i=i or 1
+	j=j or self:len()
+	return not (self:sub(i,j):find("^[+-]?%d+%.?%d*$")==nil)
+end
+string.tonumber=function(self,i,j)
+	i=i or 1
+	j=j or self:len()
+	local function parseInteger(...)
+		local params={...}
+		local result=0
+		for _,v in ipairs(params) do
+			result=result*10+v-48
+		end
+		return result
+	end
+	local _,_,sign,integerString,decimalString=self:sub(i,j):find("^([+-]?)(%d+)%.?(%d*)$")
+	local result=parseInteger(integerString:byte(1,integerString:len()))+parseInteger(decimalString:byte(1,decimalString:len()))/10^decimalString:len()
+	if (sign=="-") then
+		result=-result
+	end
+	return result
+end
 string.totable=function(self)
 	local result={}
 	for i=1,self:len() do
@@ -72,7 +95,11 @@ Action={
 			return function()
 				for index,value in ipairs(keysAndButtons) do
 					if type(value)=="string" then
-						PressKey(value)
+						if value:len()>5 and value:sub(1,5)=="delay" then
+							Sleep(value:tonumber(6))
+						else
+							PressKey(value)
+						end
 					elseif type(value)=="number" then
 						PressMouseButton(value)
 					end
@@ -83,7 +110,11 @@ Action={
 			return function()
 				for index,value in ipairs(keysAndButtons) do
 					if type(value)=="string" then
-						ReleaseKey(value)
+						if value:len()>5 and value:sub(1,5)=="delay" then
+							Sleep(value:tonumber(6))
+						else
+							ReleaseKey(value)
+						end
 					elseif type(value)=="number" then
 						ReleaseMouseButton(value)
 					end
@@ -99,7 +130,11 @@ Action={
 						elseif type(v)=="number" then
 							PressMouseButton(v)
 						elseif type(v)=="string" then
-							PressKey(v)
+							if v:len()>5 and v:sub(1,5)=="delay" then
+								Sleep(v:tonumber(6))
+							else
+								PressKey(v)
+							end
 						end
 					end
 					for i=#t,1,-1 do
@@ -107,7 +142,11 @@ Action={
 						if type(v)=="number" then
 							ReleaseMouseButton(v)
 						elseif type(v)=="string" then
-							ReleaseKey(v)
+							if v:len()>5 and v:sub(1,5)=="delay" then
+								Sleep(v:tonumber(6))
+							else
+								ReleaseKey(v)
+							end
 						end
 					end
 				else
@@ -117,7 +156,11 @@ Action={
 						elseif type(v)=="number" then
 							PressAndReleaseMouseButton(v)
 						elseif type(v)=="string" then
-							PressAndReleaseKey(v)
+							if v:len()>5 and v:sub(1,5)=="delay" then
+								Sleep(v:tonumber(6))
+							else
+								PressAndReleaseKey(v)
+							end
 						end
 					end
 				end
@@ -132,14 +175,22 @@ Action={
 				for index,value in ipairs(sequence) do
 					if pressed[value] then
 						if type(value)=="string" then
-							ReleaseKey(value)
+							if value:len()>5 and value:sub(1,5)=="delay" then
+								Sleep(value:tonumber(6))
+							else
+								ReleaseKey(value)
+							end
 						elseif type(value)=="number" then
 							ReleaseMouseButton(value)
 						end
 						pressed[value]=false
 					else
 						if type(value)=="string" then
-							PressKey(value)
+							if value:len()>5 and value:sub(1,5)=="delay" then
+								Sleep(value:tonumber(6))
+							else
+								PressKey(value)
+							end
 						elseif type(value)=="number" then
 							PressMouseButton(value)
 						end
@@ -185,7 +236,13 @@ Action={
 			end
 		end
 	},
-	
+	Delay={
+		Sleep=function(duration)
+			return function()
+				Sleep(duration)
+			end
+		end
+	}
 }
 --Event handler for combined key event
 function EncodeButton(button)
@@ -337,7 +394,16 @@ CombinedEventHandler={
 			self:Register(srcCombination,{
 				Released=Action.Macro:Play(macroName),
 			},unorderedGroup)
-		end
+		end,
+		RegisterReleasedSequence=function(self,srcCombination,funcTable,unorderedGroup)
+			self:Register(srcCombination,{
+				Released=function()
+					for _,func in ipairs(funcTable) do
+						func()
+					end
+				end
+			},unorderedGroup)
+		end,
 	},
 	SpecialHandlers={},
 	AddSpecialHandler=function(self,handle,auxiliary)
@@ -383,29 +449,30 @@ Event={
 	Activated="PROFILE_ACTIVATED",
 	Deactivated="PROFILE_DEACTIVATED",
 }
+MouseButton={}
 EnablePrimaryMouseButtonEvents(true)
 function OnEvent(event, arg)
 	if event==Event.Pressed then
 		CombinedEventHandler:PressButton(arg)
 	elseif event==Event.Released then
 		CombinedEventHandler:ReleaseButton(arg)
-	elseif event==Event.Activated then
-		Action.Cursor.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
 	end
 end
 --Enums for some mouse action parameters
-MouseButton={
-	Primary=1,
-	Secondary=2,
-	Middle=3,
-	SideBack=4,
-	SideMiddle=5,
-	SideFront=6,
-	AuxiliaryBack=7,
-	AuxiliaryFront=8,
-	Back=9,
-	WheelRight=10,
-	WheelLeft=11,
+MouseModel={
+	G502Hero={
+		Primary=1,
+		Secondary=2,
+		Middle=3,
+		SideBack=4,
+		SideMiddle=5,
+		SideFront=6,
+		AuxiliaryBack=7,
+		AuxiliaryFront=8,
+		Back=9,
+		WheelRight=10,
+		WheelLeft=11,
+	}
 }
 MouseFunction={
 	PrimaryClick=1,
@@ -414,10 +481,16 @@ MouseFunction={
 	Forward=4,
 	Back=5
 }
+function Delay(duration)
+	return "delay"..duration
+end
 --Customize combined key actions here
 Settings={
 	ScreenResolution={1920,1080},
+	MouseModel="G502Hero"
 }
+Action.Cursor.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
+MouseButton=MouseModel[Settings.MouseModel]
 CombinedEventHandler:AddSpecialHandler(function(self,event,button,pressedButtons)
 	if event=="release" and pressedButtons==MouseButton.Primary..MouseButton.Secondary then
 		Action.KeysAndButtons:Click({MouseFunction.SecondaryClick})()
