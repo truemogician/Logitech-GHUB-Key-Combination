@@ -245,21 +245,21 @@ Action={
 	}
 }
 --Event handler for combined key event
-function EncodeButton(button)
+local function EncodeButton(button)
 	if button<10 then
 		return string.char(button+48)
 	else
 		return string.char(button+55)
 	end
 end
-function DecodeButton(buttonCode)
+local function DecodeButton(buttonCode)
 	if string.isdigit(buttonCode) then
 		return string.byte(buttonCode)-48
 	else
 		return string.byte(buttonCode)-55
 	end
 end
-function NextPermutation(list)
+local function NextPermutation(list)
 	local length=#list
 	local k,l=0,0
 	for i=length-1,1,-1 do
@@ -443,15 +443,14 @@ CombinedEventHandler={
 	end
 }
 --Basic event handler provided by G-series Lua API
-Event={
+local Event={
 	Pressed="MOUSE_BUTTON_PRESSED",
 	Released="MOUSE_BUTTON_RELEASED",
 	Activated="PROFILE_ACTIVATED",
 	Deactivated="PROFILE_DEACTIVATED",
 }
-MouseButton={}
 EnablePrimaryMouseButtonEvents(true)
-function OnEvent(event, arg)
+local function OnEvent(event, arg)
 	if event==Event.Pressed then
 		CombinedEventHandler:PressButton(arg)
 	elseif event==Event.Released then
@@ -459,7 +458,7 @@ function OnEvent(event, arg)
 	end
 end
 --Enums for some mouse action parameters
-MouseModel={
+local MouseModel={
 	G502Hero={
 		Primary=1,
 		Secondary=2,
@@ -474,29 +473,32 @@ MouseModel={
 		WheelLeft=11,
 	}
 }
-MouseFunction={
+local MouseFunction={
 	PrimaryClick=1,
 	MiddleClick=2,
 	SecondaryClick=3,
 	Forward=4,
 	Back=5
 }
-function Delay(duration)
+local function delay(duration)
 	return "delay"..duration
 end
---Customize combined key actions here
+MouseButton={}
+--Change settings here
 Settings={
 	ScreenResolution={1920,1080},
 	MouseModel="G502Hero"
 }
 Action.Cursor.Resolution={Width=Settings.ScreenResolution[1],Height=Settings.ScreenResolution[2]}
 MouseButton=MouseModel[Settings.MouseModel]
+--Write customized event handler here
 CombinedEventHandler:AddSpecialHandler(function(self,event,button,pressedButtons)
 	if event=="release" and pressedButtons==MouseButton.Primary..MouseButton.Secondary then
 		Action.KeysAndButtons:Click({MouseFunction.SecondaryClick})()
 	end
 end)
 CombinedEvent=CombinedEventHandler.Event
+--Customize combined key actions here
 CombinedEvent:RegisterBind(
 	{MouseButton.Primary},
 	{MouseFunction.PrimaryClick}
