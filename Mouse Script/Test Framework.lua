@@ -56,11 +56,16 @@ if FileMode then
 	file=io.open(FilePath,"r")
 	io.input(file)
 end
+local onFile=FileMode
 while true do
 	local line=io.read()
 	if line==nil then
 		io.input(io.stdin)
+		onFile=false
 		line=io.read()
+	end
+	if onFile then
+		print(line)
 	end
 	local _,_,event,arg=line:find("([^%s]+)%s?([^%s]*)")
 	event=event:lower()
