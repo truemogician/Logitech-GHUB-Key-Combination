@@ -245,14 +245,14 @@ Action={
 	}
 }
 --Event handler for combined key event
-local function EncodeButton(button)
+function EncodeButton(button)
 	if button<10 then
 		return string.char(button+48)
 	else
 		return string.char(button+55)
 	end
 end
-local function DecodeButton(buttonCode)
+function DecodeButton(buttonCode)
 	if string.isdigit(buttonCode) then
 		return string.byte(buttonCode)-48
 	else
@@ -443,14 +443,14 @@ CombinedEventHandler={
 	end
 }
 --Basic event handler provided by G-series Lua API
-local Event={
+Event={
 	Pressed="MOUSE_BUTTON_PRESSED",
 	Released="MOUSE_BUTTON_RELEASED",
 	Activated="PROFILE_ACTIVATED",
 	Deactivated="PROFILE_DEACTIVATED",
 }
 EnablePrimaryMouseButtonEvents(true)
-local function OnEvent(event, arg)
+function OnEvent(event, arg)
 	if event==Event.Pressed then
 		CombinedEventHandler:PressButton(arg)
 	elseif event==Event.Released then
@@ -473,14 +473,14 @@ local MouseModel={
 		WheelLeft=11,
 	}
 }
-local MouseFunction={
+MouseFunction={
 	PrimaryClick=1,
 	MiddleClick=2,
 	SecondaryClick=3,
 	Forward=4,
 	Back=5
 }
-local function delay(duration)
+function delay(duration)
 	return "delay"..duration
 end
 MouseButton={}
