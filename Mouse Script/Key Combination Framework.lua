@@ -1,4 +1,4 @@
---Extent methods for standard libraries
+--#region Extend Methods
 string.at = function(self, index)
 	return self:sub(index, index)
 end
@@ -10,9 +10,7 @@ string.isnumber = function(self, i, j)
 	j = j or self:len()
 	return not (self:sub(i, j):find("^[+-]?%d+%.?%d*$") == nil)
 end
-string.tonumber = function(self, i, j)
-	i = i or 1
-	j = j or self:len()
+string.tonumber = function(self)
 	local function parseInteger(...)
 		local params = {...}
 		local result = 0
@@ -21,8 +19,8 @@ string.tonumber = function(self, i, j)
 		end
 		return result
 	end
-	local _, _, sign, integerString, decimalString = self:sub(i, j):find("^([+-]?)(%d+)%.?(%d*)$")
-	local result = parseInteger(integerString:byte(1, integerString:len()))+parseInteger(decimalString:byte(1, decimalString:len()))/10^decimalString:len()
+	local _, _, sign, integerString, decimalString = self:find("^([+-]?)(%d+)%.?(%d*)$")
+	local result = parseInteger(integerString:byte(1, integerString:len())) + parseInteger(decimalString:byte(1, decimalString:len())) / 10 ^ decimalString:len()
 	if (sign == "-") then
 		result = -result
 	end
@@ -78,6 +76,9 @@ table.length = function(list)
 	end
 	return count
 end
+--#endregion
+
+--#region Actions
 --A collection of actions provided by G-series Lua API
 Action = {
 	Debug = {
@@ -102,8 +103,8 @@ Action = {
 			return function()
 				for index, value in ipairs(keysAndButtons) do
 					if type(value) == "string" then
-						if value:len() > 5 and value:sub(1, 5) == "delay" then
-							Sleep(value:tonumber(6))
+						if value:at(1) == "#" then
+							Sleep(value:sub(2):tonumber())
 						else
 							PressKey(value)
 						end
@@ -117,8 +118,8 @@ Action = {
 			return function()
 				for index, value in ipairs(keysAndButtons) do
 					if type(value) == "string" then
-						if value:len() > 5 and value:sub(1, 5) == "delay" then
-							Sleep(value:tonumber(6))
+						if value:at(1) == "#" then
+							Sleep(value:sub(2):tonumber())
 						else
 							ReleaseKey(value)
 						end
@@ -128,17 +129,47 @@ Action = {
 				end
 			end
 		end,
+		PressAndRelease = function(self, sequence)
+			return function()
+				local pressed = {}
+				for index, value in ipairs(sequence) do
+					if pressed[value] then
+						if type(value) == "string" then
+							if value:at(1) == "#" then
+								Sleep(value:sub(2):tonumber())
+							else
+								ReleaseKey(value)
+							end
+						elseif type(value) == "number" then
+							ReleaseMouseButton(value)
+						end
+						pressed[value] = false
+					else
+						if type(value) == "string" then
+							if value:at(1) == "#" then
+								Sleep(value:sub(2):tonumber())
+							else
+								PressKey(value)
+							end
+						elseif type(value) == "number" then
+							PressMouseButton(value)
+						end
+						pressed[value] = true
+					end
+				end
+			end
+		end,
 		Click = function(self, keysAndButtons)
 			local function ClickRecursively(t, depth)
-				if depth%2 == 1 then
+				if depth % 2 == 1 then
 					for i, v in ipairs(t) do
 						if type(v) == "table" then
 							ClickRecursively(v, depth + 1)
 						elseif type(v) == "number" then
 							PressMouseButton(v)
 						elseif type(v) == "string" then
-							if v:len() > 5 and v:sub(1, 5) == "delay" then
-								Sleep(v:tonumber(6))
+							if v:at(1) == "#" then
+								Sleep(v:sub(2):tonumber())
 							else
 								PressKey(v)
 							end
@@ -149,8 +180,8 @@ Action = {
 						if type(v) == "number" then
 							ReleaseMouseButton(v)
 						elseif type(v) == "string" then
-							if v:len() > 5 and v:sub(1, 5) == "delay" then
-								Sleep(v:tonumber(6))
+							if v:at(1) == "#" then
+								Sleep(v:sub(2):tonumber())
 							else
 								ReleaseKey(v)
 							end
@@ -163,8 +194,8 @@ Action = {
 						elseif type(v) == "number" then
 							PressAndReleaseMouseButton(v)
 						elseif type(v) == "string" then
-							if v:len() > 5 and v:sub(1, 5) == "delay" then
-								Sleep(v:tonumber(6))
+							if v:at(1) == "#" then
+								Sleep(v:sub(2):tonumber())
 							else
 								PressAndReleaseKey(v)
 							end
@@ -174,36 +205,6 @@ Action = {
 			end
 			return function()
 				ClickRecursively(keysAndButtons, 1)
-			end
-		end,
-		PressAndRelease = function(self, sequence)
-			return function()
-				local pressed = {}
-				for index, value in ipairs(sequence) do
-					if pressed[value] then
-						if type(value) == "string" then
-							if value:len() > 5 and value:sub(1, 5) == "delay" then
-								Sleep(value:tonumber(6))
-							else
-								ReleaseKey(value)
-							end
-						elseif type(value) == "number" then
-							ReleaseMouseButton(value)
-						end
-						pressed[value] = false
-					else
-						if type(value) == "string" then
-							if value:len() > 5 and value:sub(1, 5) == "delay" then
-								Sleep(value:tonumber(6))
-							else
-								PressKey(value)
-							end
-						elseif type(value) == "number" then
-							PressMouseButton(value)
-						end
-						pressed[value] = true
-					end
-				end
 			end
 		end,
 	},
@@ -251,7 +252,9 @@ Action = {
 		end
 	}
 }
---Event handler for combined key event
+--#endregion
+
+--#region Combined Event Handler
 function EncodeButton(button)
 	if button < 10 then
 		return string.char(button + 48)
@@ -295,25 +298,33 @@ CombinedEventHandler = {
 	Event = {
 		List = {},
 		Current = {Length = 0},
-		Register = function(self, combination, action, unorderedGroup)
-			local unorderedGroupIndex
-			if unorderedGroup then
-				if type(unorderedGroup[1]) == "number" then
-					unorderedGroup = {unorderedGroup}
+		Register = function(self, combination, action, unorderedGroups)
+			local unorderedGroupsIndex
+			if unorderedGroups == "all" then
+				unorderedGroups = { combination }
+			elseif type(unorderedGroups) == "table" then
+				if type(unorderedGroups[1]) == "number" then
+					unorderedGroups = { unorderedGroups }
+				elseif type(unorderedGroups[1]) ~= "table" then
+					unorderedGroups = nil
 				end
-				local indexTable = {}
+			else
+				unorderedGroups = nil
+			end
+			if unorderedGroups then
+				local indexTable = { }
 				for i = 1,#combination do
 					indexTable[combination[i]] = i
 				end
-				for i = 1,#unorderedGroup do
-					for j = 1,#unorderedGroup[i] do
-						unorderedGroup[i][j] = indexTable[unorderedGroup[i][j]]
+				for i = 1,#unorderedGroups do
+					for j = 1,#unorderedGroups[i] do
+						unorderedGroups[i][j] = indexTable[unorderedGroups[i][j]]
 					end
 				end
-				for i = 1,#unorderedGroup do
-					table.sort(unorderedGroup[i])
+				for i = 1,#unorderedGroups do
+					table.sort(unorderedGroups[i])
 				end
-				unorderedGroupIndex = table.copy(unorderedGroup)
+				unorderedGroupsIndex = table.copy(unorderedGroups)
 			end
 			--Get identifier
 			local initialTable = table.copy(combination)
@@ -346,25 +357,25 @@ CombinedEventHandler = {
 					--Add event to EventList
 					self.List[identifier]={IsLeaf = isLeaf, Action = action}
 				end
-				if unorderedGroup == nil then
+				if unorderedGroups == nil then
 					break
 				end
 				local finished = true
-				for i=#unorderedGroup, 1,-1 do
-					if NextPermutation(unorderedGroup[i]) then
+				for i=#unorderedGroups, 1,-1 do
+					if NextPermutation(unorderedGroups[i]) then
 						finished = false
 						break
 					else
-						table.reverse(unorderedGroup[i])
+						table.reverse(unorderedGroups[i])
 					end
 				end
 				if finished then
 					break
 				end
 				local identifierTable = table.copy(initialTable)
-				for i = 1,#unorderedGroup do
-					for j = 1,#unorderedGroup[i] do
-						identifierTable[unorderedGroupIndex[i][j]] = initialTable[unorderedGroup[i][j]]
+				for i = 1,#unorderedGroups do
+					for j = 1,#unorderedGroups[i] do
+						identifierTable[unorderedGroupsIndex[i][j]] = initialTable[unorderedGroups[i][j]]
 					end
 				end
 				identifier = ""
@@ -464,8 +475,10 @@ CombinedEventHandler = {
 		end
 	end
 }
---Basic event handler provided by G-series Lua API
-Event = {
+--#endregion
+
+--#region API Event Handling
+RawEvent = {
 	Pressed = "MOUSE_BUTTON_PRESSED",
 	Released = "MOUSE_BUTTON_RELEASED",
 	Activated = "PROFILE_ACTIVATED",
@@ -473,13 +486,22 @@ Event = {
 }
 EnablePrimaryMouseButtonEvents(true)
 function OnEvent(event, arg)
-	if event == Event.Pressed then
+	if event == RawEvent.Pressed then
 		CombinedEventHandler:PressButton(arg)
-	elseif event == Event.Released then
+	elseif event == RawEvent.Released then
 		CombinedEventHandler:ReleaseButton(arg)
 	end
 end
---Enums for some mouse action parameters
+--#endregion
+
+--#region Mouse Enums
+MouseFunction = {
+	PrimaryClick = 1,
+	MiddleClick = 2,
+	SecondaryClick = 3,
+	Forward = 4,
+	Back = 5
+}
 local MouseModel = {
 	G502Hero = {
 		Primary = 1,
@@ -495,17 +517,9 @@ local MouseModel = {
 		WheelLeft = 11,
 	}
 }
-MouseFunction = {
-	PrimaryClick = 1,
-	MiddleClick = 2,
-	SecondaryClick = 3,
-	Forward = 4,
-	Back = 5
-}
-function delay(duration)
-	return "delay" .. duration
-end
---Change settings here
+--#endregion
+
+--#region Initialize Settings
 Settings = {
 	ScreenResolution = { 1920, 1080 },
 	MouseModel = "G502Hero"
@@ -514,8 +528,7 @@ Action.Cursor.Resolution = {
 	Width = Settings.ScreenResolution[1],
 	Height = Settings.ScreenResolution[2]
 }
-MouseButton = MouseModel[Settings.MouseModel]
-CombinedEvent = CombinedEventHandler.Event
---Write customized event handler here
-
---Customize combined key actions here
+Button = MouseModel[Settings.MouseModel]
+Mouse = MouseFunction
+Event = CombinedEventHandler.Event
+--#endregion

@@ -42,7 +42,7 @@ function PlayMacro(name)
 	print("Macro \""..name.."\" is played")
 end
 function EnablePrimaryMouseButtonEvents(arg)
-	if arg==true then
+	if arg == true then
 		print("Primary mouse button events are enabled")
 	else
 		print("Primary mouse button events are disabled")
@@ -50,43 +50,43 @@ function EnablePrimaryMouseButtonEvents(arg)
 end
 local file
 local onFile
-Test={
-	FileMode=false,
-	FilePath="Mouse Script\\Test Commands.txt",
-	Start=function(self,mouseButtonCollection,fileMode,filePath)
-		self.FileMode=fileMode or self.FileMode
-		self.FilePath=filePath or self.FilePath
+Test = {
+	FileMode = false,
+	FilePath = "Mouse Script\\Test Commands.txt",
+	Start = function(self,mouseButtonCollection,fileMode,filePath)
+		self.FileMode = fileMode or self.FileMode
+		self.FilePath = filePath or self.FilePath
 		if self.FileMode then
-			file=io.open(self.FilePath,"r")
+			file = io.open(self.FilePath,"r")
 			io.input(file)
 		end
-		onFile=self.FileMode
+		onFile = self.FileMode
 		while true do
-			local line=io.read()
-			if onFile and line==nil then
+			local line = io.read()
+			if onFile and line == nil then
 				file:close()
 				io.input(io.stdin)
-				onFile=false
-				line=io.read()
+				onFile = false
+				line = io.read()
 			end
 			if onFile then
 				print(line)
 			end
-			local _,_,event,arg=line:find("([^%s]+)%s?([^%s]*)")
-			event=event:lower()
+			local _, _, event, arg = line:find("([^%s]+)%s?([^%s]*)")
+			event = event:lower()
 			if arg:isnumber() then
-				arg=arg:tonumber()
+				arg = arg:tonumber()
 			else
-				arg=mouseButtonCollection[arg]
+				arg = mouseButtonCollection[arg]
 			end
-			if event=="activate" or event=="a" then
-				OnEvent(Event.Activated)
-			elseif event=="press" or event=="p" then
-				OnEvent(Event.Pressed,arg)
-			elseif event=="release" or event=="r" then
-				OnEvent(Event.Released,arg)
-			elseif event=="deactive" or event=="d" then
-				OnEvent(Event.Deactivated)
+			if event == "activate" or event == "a" then
+				OnEvent(RawEvent.Activated)
+			elseif event == "press" or event == "p" then
+				OnEvent(RawEvent.Pressed,arg)
+			elseif event == "release" or event == "r" then
+				OnEvent(RawEvent.Released,arg)
+			elseif event == "deactive" or event == "d" then
+				OnEvent(RawEvent.Deactivated)
 				break
 			end
 		end
