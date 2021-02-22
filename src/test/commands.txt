@@ -1,0 +1,6 @@
+activate
+p Primary
+p Secondary
+r Primary
+r Secondary
+deactive

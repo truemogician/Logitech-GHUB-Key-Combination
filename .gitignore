@@ -1,7 +1,5 @@
-.vscode
-LanesTest.lua
-Multithreading.lua
-Mouse Script/Grammar.lua
-Mouse Script/Test Commands.txt
-Mouse Script/Test.lua
-Backup/
+/*
+!/.gitignore
+!/.vscode/
+!/src/
+src/test/grammar.lua
