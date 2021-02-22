@@ -1,6 +1,11 @@
 {
     "Lua.diagnostics.globals": [
-        "inc",
-        "delay"
+        "CombinedEventHandler",
+        "Event",
+        "Test",
+        "Button",
+        "Mouse",
+        "RawEvent",
+        "OnEvent"
     ]
 }
