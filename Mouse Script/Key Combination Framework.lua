@@ -79,9 +79,10 @@ end
 --#endregion
 
 --#region Actions
---A collection of actions provided by G-series Lua API
+---Collection of actions provided by G-series Lua API
 Action = {
 	Debug = {
+		---Print message to GHUB script console
 		Print = function(self,...)
 			local args = {...}
 			return function()
@@ -92,6 +93,7 @@ Action = {
 				OutputLogMessage(content .. "\n")
 			end
 		end,
+		---Clear GHUB script console
 		Clear = function()
 			return function()
 				ClearLog()
@@ -99,6 +101,8 @@ Action = {
 		end,
 	},
 	KeysAndButtons = {
+		---Press buttons and keys in a sequence
+		--@param keysAndButtons Array consisting of numbers and strings. Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		Press = function (self, keysAndButtons)
 			return function()
 				for index, value in ipairs(keysAndButtons) do
@@ -114,6 +118,8 @@ Action = {
 				end
 			end
 		end,
+		---Release buttons and keys in a sequence
+		--@param keysAndButtons Array consisting of numbers and strings. Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		Release = function (self, keysAndButtons)
 			return function()
 				for index, value in ipairs(keysAndButtons) do
@@ -129,6 +135,8 @@ Action = {
 				end
 			end
 		end,
+		---Press or release buttons and keys in a sequence
+		--@param keysAndButtons Array consisting of numbers and strings. Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
 		PressAndRelease = function(self, sequence)
 			return function()
 				local pressed = {}
@@ -159,45 +167,47 @@ Action = {
 				end
 			end
 		end,
+		---Click buttons and keys sequentially or nestedly
+		--@param keysAndButtons Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
 		Click = function(self, keysAndButtons)
-			local function ClickRecursively(t, depth)
+			local function ClickRecursively(target, depth)
 				if depth % 2 == 1 then
-					for i, v in ipairs(t) do
-						if type(v) == "table" then
-							ClickRecursively(v, depth + 1)
-						elseif type(v) == "number" then
-							PressMouseButton(v)
-						elseif type(v) == "string" then
-							if v:at(1) == "#" then
-								Sleep(v:sub(2):tonumber())
+					for _, value in ipairs(target) do
+						if type(value) == "table" then
+							ClickRecursively(value, depth + 1)
+						elseif type(value) == "number" then
+							PressMouseButton(value)
+						elseif type(value) == "string" then
+							if value:at(1) == "#" then
+								Sleep(value:sub(2):tonumber())
 							else
-								PressKey(v)
+								PressKey(value)
 							end
 						end
 					end
-					for i=#t, 1,-1 do
-						local v = t[i]
-						if type(v) == "number" then
-							ReleaseMouseButton(v)
-						elseif type(v) == "string" then
-							if v:at(1) == "#" then
-								Sleep(v:sub(2):tonumber())
+					for i = #target, 1,-1 do
+						local value = target[i]
+						if type(value) == "number" then
+							ReleaseMouseButton(value)
+						elseif type(value) == "string" then
+							if value:at(1) == "#" then
+								Sleep(value:sub(2):tonumber())
 							else
-								ReleaseKey(v)
+								ReleaseKey(value)
 							end
 						end
 					end
 				else
-					for i, v in ipairs(t) do
-						if type(v) == "table" then
-							ClickRecursively(v, depth + 1)
-						elseif type(v) == "number" then
-							PressAndReleaseMouseButton(v)
-						elseif type(v) == "string" then
-							if v:at(1) == "#" then
-								Sleep(v:sub(2):tonumber())
+					for _, value in ipairs(target) do
+						if type(value) == "table" then
+							ClickRecursively(value, depth + 1)
+						elseif type(value) == "number" then
+							PressAndReleaseMouseButton(value)
+						elseif type(value) == "string" then
+							if value:at(1) == "#" then
+								Sleep(value:sub(2):tonumber())
 							else
-								PressAndReleaseKey(v)
+								PressAndReleaseKey(value)
 							end
 						end
 					end
@@ -209,24 +219,35 @@ Action = {
 		end,
 	},
 	Wheel = {
-		MoveUp = function(self, count)
+		---Scroll mouse wheel up
+		--@param count Number of clicks
+		ScrollUp = function(self, count)
 			return function()
 				MoveMouseWheel(count)
 			end
 		end,
-		MoveDown = function(self, count)
+		---Scroll mouse wheel down
+		--@param count Number of clicks
+		ScrollDown = function(self, count)
 			return function()
 				MoveMouseWheel(-count)
 			end
 		end,
 	},
 	Cursor = {
-		Resolution = {Width = 1920, Height = 1080},
+		---Resolution of the screen
+		Resolution = { Width = 1920, Height = 1080 },
+		---Move cursor by some pixels
+		--@param x Number of pixels horizontally
+		--@param y Number of pixels vertically
 		Move = function(self, x, y)
 			return function()
 				MoveMouseRelative(x*self.Resolution.Width/65535, y*self.Resolution.Height/65535)
 			end
 		end,
+		---Move cursor to certian position
+		--@param x Abscissa of the position
+		--@param y Ordinate of the positoin
 		MoveTo = function(self, x, y)
 			return function()
 				MoveMouseTo(x*self.Resolution.Width/65535, y*self.Resolution.Height/65535)
@@ -235,6 +256,8 @@ Action = {
 	},
 	Macro = {
 		AbortOtherMacrosBeforePlay = false,
+		---Play macroName
+		--@param macroName Name of the macro
 		Play = function(self, macroName)
 			return function()
 				if self.AbortOtherMacrosBeforePlay then
@@ -245,6 +268,8 @@ Action = {
 		end
 	},
 	Delay = {
+		---Sleep for some time
+		--@param duration Number of millisecond to sleep
 		Sleep = function(duration)
 			return function()
 				Sleep(duration)
@@ -294,14 +319,21 @@ local function NextPermutation(list)
 	return true
 end
 CombinedEventHandler = {
+	---Keys and buttons currently pressed
 	PressedButtons = "",
 	Event = {
+		---Collection of all registered events
 		List = {},
+		---Events currently on effect
 		Current = {Length = 0},
-		Register = function(self, combination, action, unorderedGroups)
+		---Register an event
+		--@param sequence Sequence of mouse buttons
+		--@param action Action to be taken when the event fires
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		Register = function(self, sequence, action, unorderedGroups)
 			local unorderedGroupsIndex
 			if unorderedGroups == "all" then
-				unorderedGroups = { combination }
+				unorderedGroups = { sequence }
 			elseif type(unorderedGroups) == "table" then
 				if type(unorderedGroups[1]) == "number" then
 					unorderedGroups = { unorderedGroups }
@@ -313,8 +345,8 @@ CombinedEventHandler = {
 			end
 			if unorderedGroups then
 				local indexTable = { }
-				for i = 1,#combination do
-					indexTable[combination[i]] = i
+				for i = 1,#sequence do
+					indexTable[sequence[i]] = i
 				end
 				for i = 1,#unorderedGroups do
 					for j = 1,#unorderedGroups[i] do
@@ -327,9 +359,9 @@ CombinedEventHandler = {
 				unorderedGroupsIndex = table.copy(unorderedGroups)
 			end
 			--Get identifier
-			local initialTable = table.copy(combination)
+			local initialTable = table.copy(sequence)
 			local identifier = ""
-			for i, v in ipairs(combination) do
+			for i, v in ipairs(sequence) do
 				identifier = identifier .. EncodeButton(v)
 			end
 			while true do
@@ -384,52 +416,86 @@ CombinedEventHandler = {
 				end
 			end
 		end,
-		RegisterPressed = function(self, combination, pAction, unorderedGroup)
-			self:Register(combination,{Pressed = pAction},unorderedGroup)
+		---Register an event firing when pressed
+		--@param sequence Sequence of mouse buttons
+		--@param pAction Action to be taken when the event fires
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterPressed = function(self, sequence, pAction, unorderedGroup)
+			self:Register(sequence,{Pressed = pAction},unorderedGroup)
 		end,
-		RegisterReleased = function(self, combination, rAction, unorderedGroup)
-			self:Register(combination,{Released = rAction},unorderedGroup)
+		---Register an event firing when released
+		--@param sequence Sequence of mouse buttons
+		--@param rAction Action to be taken when the event fires
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterReleased = function(self, sequence, rAction, unorderedGroup)
+			self:Register(sequence,{Released = rAction},unorderedGroup)
 		end,
-		RegisterPressedAndReleassed = function(self, combination, pAction, rAction, unorderedGroup)
-			self:Register(combination,{Pressed = pAction, Released = rAction},unorderedGroup)
+		---Register both pressed and released events
+		--@param sequence Sequence of mouse buttons
+		--@param pAction Action to be taken when pressed
+		--@param rAction Action to be taken when released
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterPressedAndReleassed = function(self, sequence, pAction, rAction, unorderedGroup)
+			self:Register(sequence,{Pressed = pAction, Released = rAction},unorderedGroup)
 		end,
-		RegisterBind = function(self, srcCombination, dstCombination, unorderedGroup)
+		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
+		--@param srcSequence Array of numbers, representing mouse buttons
+		--@param dstSequence Array consisting of numbers, strings. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterBind = function(self, srcSequence, dstSequence, unorderedGroup)
 			local reversedDstCombination = {}
-			for i = 1,#dstCombination do
-				reversedDstCombination[i] = dstCombination[#dstCombination - i + 1]
+			for i = 1,#dstSequence do
+				reversedDstCombination[i] = dstSequence[#dstSequence - i + 1]
 			end
-			self:Register(srcCombination,{
-				Pressed = Action.KeysAndButtons:Press(dstCombination),
+			self:Register(srcSequence,{
+				Pressed = Action.KeysAndButtons:Press(dstSequence),
 				Released = Action.KeysAndButtons:Release(reversedDstCombination)
 			},unorderedGroup)
 		end,
-		RegisterReleasedBind = function(self, srcCombination, dstCombination, unorderedGroup)
-			self:Register(srcCombination,{
-				Released = Action.KeysAndButtons:Click(dstCombination),
+		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
+		--@param srcSequence Array of numbers, representing mouse buttons
+		--@param dstSequence Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterReleasedBind = function(self, srcSequence, srcCombination, unorderedGroup)
+			self:Register(srcSequence,{
+				Released = Action.KeysAndButtons:Click(srcCombination),
 			},unorderedGroup)
 		end,
-		RegisterReleasedMacro = function(self, srcCombination, macroName, unorderedGroup)
-			self:Register(srcCombination,{
+		---Register a macro playing action to released event
+		--@param srcSequence Array of numbers, representing mouse buttons
+		--@param macroName Name of the macro
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterReleasedMacro = function(self, srcSequence, macroName, unorderedGroup)
+			self:Register(srcSequence,{
 				Released = Action.Macro:Play(macroName),
 			},unorderedGroup)
 		end,
-		RegisterReleasedSequence = function(self, srcCombination, funcTable, unorderedGroup)
-			self:Register(srcCombination,{
+		---Register a sequence of actions to released event
+		--@param srcSequence Array of numbers, representing mouse buttons
+		--@param actionSequence Array of actions
+		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		RegisterReleasedSequence = function(self, srcSequence, actionSequence, unorderedGroup)
+			self:Register(srcSequence,{
 				Released = function()
-					for _, func in ipairs(funcTable) do
-						func()
+					for _, action in ipairs(actionSequence) do
+						action()
 					end
 				end
 			},unorderedGroup)
 		end,
 	},
+	---Collection of special handlers
 	SpecialHandlers = {},
+	---Add special handlers
+	--@param handle The handling function
+	--@param auxilary Auxiliary variables for handler to use
 	AddSpecialHandler = function(self, handle, auxiliary)
 		self.SpecialHandlers[#self.SpecialHandlers + 1] = {
 			Handle = handle,
 			Auxiliary = auxiliary,
 		}
 	end,
+	---Function to be called when a mouse button is pressed
 	PressButton = function(self, button)
 		for i = 1,#self.SpecialHandlers do
 			self.SpecialHandlers[i]:Handle("press",button, self.PressedButtons)
@@ -451,6 +517,7 @@ CombinedEventHandler = {
 			end
 		end
 	end,
+	---Function to be called when a mouse button is released
 	ReleaseButton = function(self, button)
 		for i = 1,#self.SpecialHandlers do
 			self.SpecialHandlers[i]:Handle("release",button, self.PressedButtons)
@@ -478,6 +545,7 @@ CombinedEventHandler = {
 --#endregion
 
 --#region API Event Handling
+---Raw events provided by G-series API
 RawEvent = {
 	Pressed = "MOUSE_BUTTON_PRESSED",
 	Released = "MOUSE_BUTTON_RELEASED",
@@ -485,6 +553,7 @@ RawEvent = {
 	Deactivated = "PROFILE_DEACTIVATED",
 }
 EnablePrimaryMouseButtonEvents(true)
+---Handling function to be called when a raw event fires
 function OnEvent(event, arg)
 	if event == RawEvent.Pressed then
 		CombinedEventHandler:PressButton(arg)
