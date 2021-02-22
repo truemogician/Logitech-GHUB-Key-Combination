@@ -1,5 +1,7 @@
 /*
 !/.gitignore
+!/LICENSE
+!/README.md
 !/.vscode/
 !/src/
 src/test/grammar.lua

@@ -2,7 +2,6 @@ package.path = package.path .. ";?.lua"
 require "src/test/test framework"
 require "src/key combination"
 
---Add special handlers and register events here
 local auxilary = { count = 0 }
 CombinedEventHandler:AddSpecialHandler(
 	function (self, event, btn, pressed)
@@ -17,5 +16,14 @@ CombinedEventHandler:AddSpecialHandler(
 )
 Event:RegisterBind({ Button.Primary }, { Mouse.PrimaryClick })
 Event:RegisterBind({ Button.Secondary}, { Mouse.SecondaryClick })
+Event:RegisterReleasedBind(
+	{ Button.SideMiddle, Button.Primary },
+	{ "a", "b", { "c", "d", { "e", "f" } }, "g" }
+)
+Event:RegisterReleasedMacro(
+	{ Button.SideBack, Button.Secondary, Button.Primary },
+	"MACRO",
+	{ Button.Secondary, Button.Primary }
+)
 
 Test:Start(true)
