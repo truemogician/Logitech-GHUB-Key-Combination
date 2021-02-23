@@ -1,16 +1,45 @@
+--#region Class Definations
+
+---@alias numstr number|string
+---@alias SpecialHandler fun(self:table, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
+
+---@class char:string @string whose length is 1
+
+---@class EventAction
+---@field Pressed fun() @Function to be called when key combination is pressed
+---@field Released fun() @Function to be called when key combination is released
+
+---@class Event
+---@field Action EventAction
+---@field IsLeaf boolean @Indicate whether this event is a leaf event
+
+--#endregion
+
 --#region Extend Methods
-string.at = function(self, index)
+
+---Get the character at given position, starting with 1
+---@param index integer position of the character
+---@return char
+function string:at(index)
 	return self:sub(index, index)
 end
-string.isdigit = function(char)
-	return char >= "0" and char <= "9"
+
+---Indicate whether the character represents a digit
+---@param self char character to be checked
+---@return boolean
+function string.isdigit(self)
+	return self >= "0" and self <= "9"
 end
-string.isnumber = function(self, i, j)
-	i = i or 1
-	j = j or self:len()
-	return not (self:sub(i, j):find("^[+-]?%d+%.?%d*$") == nil)
+
+---Indicate whether the string represents a number
+---@return boolean
+function string:isnumber()
+	return self:find("^[+-]?%d+%.?%d*$") ~= nil
 end
-string.tonumber = function(self)
+
+---Convert a string with number format to a number
+---@return number
+function string:tonumber()
 	local function parseInteger(...)
 		local params = {...}
 		local result = 0
@@ -26,34 +55,38 @@ string.tonumber = function(self)
 	end
 	return result
 end
-string.totable = function(self)
+
+---Convert a string to an character array
+---@return char[]
+function string:toarray()
 	local result = {}
 	for i = 1, self:len() do
 		result[i] = self:at(i)
 	end
 	return result
 end
-table.reverse = function(list, i, j)
+
+---Reverse the table from i to j
+---@param i? integer
+---@param j? integer
+---@return table
+function table:reverse(i, j)
 	i = i or 1
-	j = j or #list
+	j = j or #self
 	local tmp = nil
 	for index = i, i + (j - i) / 2 do
-		tmp = list[index]
-		list[index] = list[j - index + i]
-		list[j - index + i] = tmp
+		tmp = self[index]
+		self[index] = self[j - index + i]
+		self[j - index + i] = tmp
 	end
-	return list
+	return self
 end
-table.print = function(list)
-	local result = ""
-	for i, v in ipairs(list) do
-		result = result .. " " .. v
-	end
-	print(result)
-end
-table.copy = function(src)
+
+---Create a copy of a table recursively
+---@return table
+function table:copy()
 	local list = {}
-	for key, value in pairs(src) do
+	for key, value in pairs(self) do
 		if type(value) == "table" then
 			list[key] = table.copy(value)
 		else
@@ -62,16 +95,23 @@ table.copy = function(src)
 	end
 	return list
 end
-table.tostring = function(list)
+
+---Convert table to string by directly concat all values
+---@param self any[]
+---@return string
+function table.tostring(self)
 	local result = ""
-	for i, v in ipairs(list) do
+	for _, v in ipairs(self) do
 		result = result .. v
 	end
 	return result
 end
-table.length = function(list)
+
+---Get the length of any table
+---@return integer
+function table:length()
 	local count = 0
-	for _ in pairs(list) do
+	for _ in pairs(self) do
 		count = count + 1
 	end
 	return count
@@ -79,21 +119,25 @@ end
 --#endregion
 
 --#region Actions
+
 ---Collection of actions provided by G-series Lua API
 Action = {
 	Debug = {
 		---Print message to GHUB script console
+		---@vararg any @messages to be printed
+		---@return function
 		Print = function(self,...)
 			local args = {...}
 			return function()
 				local content = ""
-				for index, value in ipairs(args) do
+				for _, value in ipairs(args) do
 					content = content .. value
 				end
 				OutputLogMessage(content .. "\n")
 			end
 		end,
 		---Clear GHUB script console
+		---@return function
 		Clear = function()
 			return function()
 				ClearLog()
@@ -102,7 +146,8 @@ Action = {
 	},
 	KeysAndButtons = {
 		---Press buttons and keys in a sequence
-		--@param keysAndButtons Array consisting of numbers and strings. Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons numstr[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@return function
 		Press = function (self, keysAndButtons)
 			return function()
 				for index, value in ipairs(keysAndButtons) do
@@ -119,7 +164,8 @@ Action = {
 			end
 		end,
 		---Release buttons and keys in a sequence
-		--@param keysAndButtons Array consisting of numbers and strings. Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons numstr[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@return function
 		Release = function (self, keysAndButtons)
 			return function()
 				for index, value in ipairs(keysAndButtons) do
@@ -136,11 +182,12 @@ Action = {
 			end
 		end,
 		---Press or release buttons and keys in a sequence
-		--@param keysAndButtons Array consisting of numbers and strings. Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
-		PressAndRelease = function(self, sequence)
+		---@param keysAndButtons numstr[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
+		---@return function
+		PressAndRelease = function(self, keysAndButtons)
 			return function()
 				local pressed = {}
-				for index, value in ipairs(sequence) do
+				for index, value in ipairs(keysAndButtons) do
 					if pressed[value] then
 						if type(value) == "string" then
 							if value:at(1) == "#" then
@@ -168,7 +215,8 @@ Action = {
 			end
 		end,
 		---Click buttons and keys sequentially or nestedly
-		--@param keysAndButtons Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
+		---@param keysAndButtons any[] @Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
+		---@return function
 		Click = function(self, keysAndButtons)
 			local function ClickRecursively(target, depth)
 				if depth % 2 == 1 then
@@ -220,14 +268,16 @@ Action = {
 	},
 	Wheel = {
 		---Scroll mouse wheel up
-		--@param count Number of clicks
+		---@param count integer @Number of clicks
+		---@return function
 		ScrollUp = function(self, count)
 			return function()
 				MoveMouseWheel(count)
 			end
 		end,
 		---Scroll mouse wheel down
-		--@param count Number of clicks
+		---@param count integer @Number of clicks
+		---@return function
 		ScrollDown = function(self, count)
 			return function()
 				MoveMouseWheel(-count)
@@ -238,16 +288,18 @@ Action = {
 		---Resolution of the screen
 		Resolution = { Width = 1920, Height = 1080 },
 		---Move cursor by some pixels
-		--@param x Number of pixels horizontally
-		--@param y Number of pixels vertically
+		---@param x integer @Number of pixels horizontally
+		---@param y integer @Number of pixels vertically
+		---@return function
 		Move = function(self, x, y)
 			return function()
-				MoveMouseRelative(x*self.Resolution.Width/65535, y*self.Resolution.Height/65535)
+				MoveMouseRelative(x * self.Resolution.Width / 65535, y * self.Resolution.Height / 65535)
 			end
 		end,
 		---Move cursor to certian position
-		--@param x Abscissa of the position
-		--@param y Ordinate of the positoin
+		---@param x integer @Abscissa of the position
+		---@param y integer @Ordinate of the positoin
+		---@return function
 		MoveTo = function(self, x, y)
 			return function()
 				MoveMouseTo(x*self.Resolution.Width/65535, y*self.Resolution.Height/65535)
@@ -255,12 +307,15 @@ Action = {
 		end,
 	},
 	Macro = {
-		AbortOtherMacrosBeforePlay = false,
-		---Play macroName
-		--@param macroName Name of the macro
+		---Other playing macros will be aborted if this is set to true
+		---@type boolean
+		AbortBeforePlay = false,
+		---Play macro
+		---@param macroName string @Name of the macro
+		---@return function
 		Play = function(self, macroName)
 			return function()
-				if self.AbortOtherMacrosBeforePlay then
+				if self.AboutBeforePlay then
 					AbortMacro()
 				end
 				PlayMacro(macroName)
@@ -269,7 +324,8 @@ Action = {
 	},
 	Delay = {
 		---Sleep for some time
-		--@param duration Number of millisecond to sleep
+		---@param duration integer @Number of millisecond to sleep
+		---@return function
 		Sleep = function(duration)
 			return function()
 				Sleep(duration)
@@ -277,9 +333,13 @@ Action = {
 		end
 	}
 }
+
 --#endregion
 
---#region Combined Event Handler
+--#region Key Combination Core
+
+---@param button integer
+---@return char
 function EncodeButton(button)
 	if button < 10 then
 		return string.char(button + 48)
@@ -287,6 +347,9 @@ function EncodeButton(button)
 		return string.char(button + 55)
 	end
 end
+
+---@param buttonCode char
+---@return integer
 function DecodeButton(buttonCode)
 	if string.isdigit(buttonCode) then
 		return string.byte(buttonCode) - 48
@@ -294,8 +357,11 @@ function DecodeButton(buttonCode)
 		return string.byte(buttonCode) - 55
 	end
 end
+
+---@param list any[]
+---@return boolean @Return false if list is currently the last permutation
 local function NextPermutation(list)
-	local length=#list
+	local length = #list
 	local k, l = 0, 0
 	for i = length - 1, 1,-1 do
 		if list[i] < list[i + 1] then
@@ -318,18 +384,25 @@ local function NextPermutation(list)
 	table.reverse(list, k + 1, length)
 	return true
 end
-CombinedEventHandler = {
+
+---
+KeyCombination = {
 	---Keys and buttons currently pressed
+	---@type string
 	PressedButtons = "",
+
 	Event = {
 		---Collection of all registered events
+		---@type table<string, Event>
 		List = {},
+
 		---Events currently on effect
-		Current = {Length = 0},
+		Current = { Length = 0 },
+
 		---Register an event
-		--@param sequence Sequence of mouse buttons
-		--@param action Action to be taken when the event fires
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
+		---@param sequence integer[] @Sequence of mouse buttons
+		---@param action EventAction @Action to be taken when the event fires
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		Register = function(self, sequence, action, unorderedGroups)
 			local unorderedGroupsIndex
 			if unorderedGroups == "all" then
@@ -387,7 +460,7 @@ CombinedEventHandler = {
 						end
 					end
 					--Add event to EventList
-					self.List[identifier]={IsLeaf = isLeaf, Action = action}
+					self.List[identifier] = { IsLeaf = isLeaf, Action = action }
 				end
 				if unorderedGroups == nil then
 					break
@@ -416,86 +489,90 @@ CombinedEventHandler = {
 				end
 			end
 		end,
+
 		---Register an event firing when pressed
-		--@param sequence Sequence of mouse buttons
-		--@param pAction Action to be taken when the event fires
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterPressed = function(self, sequence, pAction, unorderedGroup)
-			self:Register(sequence,{Pressed = pAction},unorderedGroup)
+		---@param sequence integer[] @Sequence of mouse buttons
+		---@param pAction fun() @Action to be taken when the event fires
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterPressed = function(self, sequence, pAction, unorderedGroups)
+			self:Register(sequence, { Pressed = pAction }, unorderedGroups)
 		end,
+
 		---Register an event firing when released
-		--@param sequence Sequence of mouse buttons
-		--@param rAction Action to be taken when the event fires
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterReleased = function(self, sequence, rAction, unorderedGroup)
-			self:Register(sequence,{Released = rAction},unorderedGroup)
+		---@param sequence integer[] @Sequence of mouse buttons
+		---@param rAction fun() @Action to be taken when the event fires
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleased = function(self, sequence, rAction, unorderedGroups)
+			self:Register(sequence, { Released = rAction }, unorderedGroups)
 		end,
-		---Register both pressed and released events
-		--@param sequence Sequence of mouse buttons
-		--@param pAction Action to be taken when pressed
-		--@param rAction Action to be taken when released
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterPressedAndReleassed = function(self, sequence, pAction, rAction, unorderedGroup)
-			self:Register(sequence,{Pressed = pAction, Released = rAction},unorderedGroup)
-		end,
+
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
-		--@param srcSequence Array of numbers, representing mouse buttons
-		--@param dstSequence Array consisting of numbers, strings. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterBind = function(self, srcSequence, dstSequence, unorderedGroup)
+		---@param srcSequence integer[] @Mouse buttons combinations
+		---@param dstSequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterBind = function(self, srcSequence, dstSequence, unorderedGroups)
 			local reversedDstCombination = {}
 			for i = 1,#dstSequence do
 				reversedDstCombination[i] = dstSequence[#dstSequence - i + 1]
 			end
-			self:Register(srcSequence,{
+
+			self:Register(srcSequence, {
 				Pressed = Action.KeysAndButtons:Press(dstSequence),
 				Released = Action.KeysAndButtons:Release(reversedDstCombination)
-			},unorderedGroup)
+			}, unorderedGroups)
 		end,
+
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
-		--@param srcSequence Array of numbers, representing mouse buttons
-		--@param dstSequence Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterReleasedBind = function(self, srcSequence, srcCombination, unorderedGroup)
-			self:Register(srcSequence,{
-				Released = Action.KeysAndButtons:Click(srcCombination),
-			},unorderedGroup)
+		---@param srcSequence integer[] @Mouse buttons combinations
+		---@param dstSequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleasedBind = function(self, srcSequence, dstSequence, unorderedGroups)
+			self:Register(srcSequence, {
+				Released = Action.KeysAndButtons:Click(dstSequence),
+			}, unorderedGroups)
 		end,
+
 		---Register a macro playing action to released event
-		--@param srcSequence Array of numbers, representing mouse buttons
-		--@param macroName Name of the macro
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterReleasedMacro = function(self, srcSequence, macroName, unorderedGroup)
-			self:Register(srcSequence,{
+		---@param srcSequence integer[] @Mouse buttons combinations
+		---@param macroName string @Name of the macro
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleasedMacro = function(self, srcSequence, macroName, unorderedGroups)
+			self:Register(srcSequence, {
 				Released = Action.Macro:Play(macroName),
-			},unorderedGroup)
+			}, unorderedGroups)
 		end,
+
 		---Register a sequence of actions to released event
-		--@param srcSequence Array of numbers, representing mouse buttons
-		--@param actionSequence Array of actions
-		--@param unorderedGroups Order of the buttons within the table will be ignored.
-		RegisterReleasedSequence = function(self, srcSequence, actionSequence, unorderedGroup)
-			self:Register(srcSequence,{
+		---@param srcSequence integer[] @Mouse buttons combinations
+		---@param actionSequence fun() @Array of actions
+		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleasedSequence = function(self, srcSequence, actionSequence, unorderedGroups)
+			self:Register(srcSequence, {
 				Released = function()
 					for _, action in ipairs(actionSequence) do
 						action()
 					end
 				end
-			},unorderedGroup)
+			}, unorderedGroups)
 		end,
 	},
+
 	---Collection of special handlers
+	---@type SpecialHandler
 	SpecialHandlers = {},
+
 	---Add special handlers
-	--@param handle The handling function
-	--@param auxilary Auxiliary variables for handler to use
+	---@param handle SpecialHandler @The handling function
+	---@param auxiliary any @Auxiliary variables for handler to use
 	AddSpecialHandler = function(self, handle, auxiliary)
 		self.SpecialHandlers[#self.SpecialHandlers + 1] = {
 			Handle = handle,
 			Auxiliary = auxiliary,
 		}
 	end,
+
 	---Function to be called when a mouse button is pressed
+	---@param button integer
 	PressButton = function(self, button)
 		for i = 1,#self.SpecialHandlers do
 			self.SpecialHandlers[i]:Handle("press",button, self.PressedButtons)
@@ -517,7 +594,9 @@ CombinedEventHandler = {
 			end
 		end
 	end,
+
 	---Function to be called when a mouse button is released
+	---@param button integer
 	ReleaseButton = function(self, button)
 		for i = 1,#self.SpecialHandlers do
 			self.SpecialHandlers[i]:Handle("release",button, self.PressedButtons)
@@ -542,35 +621,49 @@ CombinedEventHandler = {
 		end
 	end
 }
+
 --#endregion
 
 --#region API Event Handling
+
 ---Raw events provided by G-series API
+---@type table<string,string>
 RawEvent = {
 	Pressed = "MOUSE_BUTTON_PRESSED",
 	Released = "MOUSE_BUTTON_RELEASED",
 	Activated = "PROFILE_ACTIVATED",
 	Deactivated = "PROFILE_DEACTIVATED",
 }
+
 EnablePrimaryMouseButtonEvents(true)
----Handling function to be called when a raw event fires
+
+---Handling function to be called by GHUB when a raw event fires
+---@param event string
+---@param arg integer
 function OnEvent(event, arg)
 	if event == RawEvent.Pressed then
-		CombinedEventHandler:PressButton(arg)
+		KeyCombination:PressButton(arg)
 	elseif event == RawEvent.Released then
-		CombinedEventHandler:ReleaseButton(arg)
+		KeyCombination:ReleaseButton(arg)
 	end
 end
+
 --#endregion
 
 --#region Mouse Enums
-MouseFunction = {
+
+---Mouse functions
+---@type table<string,number>
+Mouse = {
 	PrimaryClick = 1,
 	MiddleClick = 2,
 	SecondaryClick = 3,
 	Forward = 4,
 	Back = 5
 }
+
+---Collection of mouse button code mappings of common Logitech mouse models
+---@type table<string,table<string,number>>
 local MouseModel = {
 	G502Hero = {
 		Primary = 1,
@@ -586,6 +679,7 @@ local MouseModel = {
 		WheelLeft = 11,
 	}
 }
+
 --#endregion
 
 --#region Initialize Settings
@@ -598,6 +692,5 @@ Action.Cursor.Resolution = {
 	Height = Settings.ScreenResolution[2]
 }
 Button = MouseModel[Settings.MouseModel]
-Mouse = MouseFunction
-Event = CombinedEventHandler.Event
+Event = KeyCombination.Event
 --#endregion
