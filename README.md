@@ -5,20 +5,33 @@
 + ### **What's it used for ?**
   Extend the functionality of Logi mouses. With this framework, users can easily assign keyboard or macro mappings to all kinds of mouse button combinations. The number of keys isn't the limit, as long as your fingers could reach them at the same time :grin:.
 + ### **How to use it ?**
-  1. Download **key combination.lua** from release  
-  2. Append a few lua code to register events and add special handlers
-  3. Open GHUB and add a new profile to your target application
-  4. In the new profile, disable the buttons that you'll register in the script in "Assign" tab
+  1. Download **key combination.lua** from the latest release  
+  2. Append a few lua code to register events and add custom handlers
+  3. Open GHUB and add a new profile for your target application
+  4. Enter the new profile, switch to "Assign" tab and disable the buttons that you'll register in the script
   5. Create a new script through GHUB
-  6. Copy and paste the framework and your own code into the GHUB script editor and save it
-  7. Enjoy your mouse
+  6. Copy and paste the framework with your own code into the GHUB script editor and save it
+  7. Enjoy the powerful mouse
   + Note that if your combination involves primary key and thus you disable it in the new profile, make sure you have alternative way, like using touch board, to do a primary click. Otherwise it's very likely that you lost control of your computer, since most users are not familiar with pure keyboard control.
 + ### **How to test or debug my assignment ?**
-  Obviously, the simplest way to test is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [test framework](src/test/test%20framework.lua) if you are familiar with lua.  
-To properly make use of the test framework, you may refer to [test.lua](src/test/test.lua), it's a simple example. It's recommended to write test operations in [commands.txt](src/test/commands.txt) just as shown in *test.lua*
+  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [test framework](src/test/test%20framework.lua) if you are familiar with lua.  
+  Refer to [example.lua](src/test/example.lua) for usage. It's recommended to write test operations in [operations.txt](src/test/operations.txt) like *example.lua*, reading from file makes it possible to use debugger.
 ## **Documentation**
-+ ### **Principle**
-  Usually, a well-designed framework should work as a blackbox, thus there's no need for the user to know the principle. But because of the limit of GHUB Lua API, the use of this framework should be normalized to avoid some potential bugs, and the standard
++ ### **Standard**
+  Due to the principle of the framework, user should follow the standard below to avoid unexpected behavior in advance.  
+  + ***No duplicate buttons in combination***  
+    Obviously, you cannot press a pressed button, thus such event will never be triggered in real application.
+  + ***Don't rgister a combination more than once***  
+    If one combination is registered multiple times, only the latest assignment will be on effect.
+  + ***Register pressed event for leaf combination only***  
+    A **leaf combination** is one that no other registered combinations hold it as prefix. For example, if you have following combinations in your registry (each numeric character represent a mouse button), 
+    ```json
+    ["1", "12", "23", "123"]
+    ```
+    "1" and "12" are not leaf combinations, because "1" is the prefix of "12" and "123", and "12" is the prefix of "123".  
+    Any registered pressed events of non-leaf combination will be removed to avoid misbehavior.
+  + ***Register released event only if possible***  
+    It could be supposed from above that released-only event leaves more possibility, thus if pressing action is not in demand, switch to released-only register methods.
 + ### **Globals**
   1. #### ***Action***
       A collection of all actions provided by G-series Lua API. The introduction of each action is written as comments, and their function could be easily guessed by its name. Since in most cases users just need to use the wrapped register methods, there's no need to put detailed documentation on this table.
@@ -30,20 +43,14 @@ To properly make use of the test framework, you may refer to [test.lua](src/test
   4. #### ***Event***
       The base table used to register events. Users only need to use it in the following sentence  
 	  ```lua
-	  Event:SomeRegisterMethod(parameters...)
+	  Event:SomeRegisteringMethod(parameters...)
 	  ```  
-	  Notice that you must use **":"**, the **colon** instead of **"."**, the **period** to call registering methods.
+	  Notice that you must use **":"**, the **colon** instead of **"."**, the **period**, to call registering methods.
   5. #### ***Mouse***
       A collection of mouse functions like primary click and secondary click. Same as *Button*, it's just help you to memory.
-  6. #### ***CombinedEventHandler***
-      The core table of the framework. But here for users, it's just used for adding special handlers. It's only for few special behavior beyond the basic framework, which won't be in need in most cases. 
-	  ```lua
-	  CombinedEventHandler:AddSpecialHandler(
-		  handle: (this: table, event: string, button: string, pressed: string) => any
-		  auxilary : any
-	  )
-	  ```
-	  Refer to [test.lua](src/test/test.lua) for more implementation details.
+  6. #### ***KeyCombination***
+      The core table of the framework. But for users, it's just used for adding custom handlers. It's only for few special behaviors beyond the basic framework, which won't be in need in most cases.   
+	    Refer to [example.lua](src/test/example.lua) for implementation details.
 + ### **Register**
   For most cases, all the code you need to write yourself is registering. Here's some most commonly used methods.  
   1. #### ***RegisterBind***
