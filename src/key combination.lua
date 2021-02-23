@@ -1,7 +1,7 @@
 --#region Class Definations
 
 ---@alias numstr number|string
----@alias SpecialHandler fun(self:table, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
+---@alias Handler fun(self:table, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
 
 ---@class char:string @string whose length is 1
 
@@ -12,6 +12,11 @@
 ---@class Event
 ---@field Action EventAction
 ---@field IsLeaf boolean @Indicate whether this event is a leaf event
+
+---@class ConfiguredHandler
+---@field TriggerTime "'pre'"|"'post"
+---@field Handle Handler
+---@field Instrument any @Contains instrumental variable
 
 --#endregion
 
@@ -397,7 +402,8 @@ KeyCombination = {
 		List = {},
 
 		---Events currently on effect
-		Current = { Length = 0 },
+		---@type Event[]
+		Current = {},
 
 		---Register an event
 		---@param sequence integer[] @Sequence of mouse buttons
@@ -557,40 +563,58 @@ KeyCombination = {
 		end,
 	},
 
-	---Collection of special handlers
-	---@type SpecialHandler
-	SpecialHandlers = {},
+	---Collection of custom handlers
+	---@type ConfiguredHandler[]
+	CustomHandlers = {},
 
-	---Add special handlers
-	---@param handle SpecialHandler @The handling function
-	---@param auxiliary any @Auxiliary variables for handler to use
-	AddSpecialHandler = function(self, handle, auxiliary)
-		self.SpecialHandlers[#self.SpecialHandlers + 1] = {
-			Handle = handle,
-			Auxiliary = auxiliary,
+	---Add handlers to be triggered before the main handler
+	---@param handler Handler @The handling function
+	---@param instrument? any @Instrumental variables for handler to use
+	AddPreHandler = function(self, handler, instrument)
+		self.CustomHandlersHandlers[#self.CustomHandlers + 1] = {
+			TriggerTime = "pre",
+			Handle = handler,
+			Instrument = instrument,
+		}
+	end,
+
+	---Add handlers to be triggered after the main handler
+	---@param handler Handler @The handling function
+	---@param instrument? any @Instrumental variables for handler to use
+	AddPostHandler = function(self, handler, instrument)
+		self.CustomHandlers[#self.CustomHandlers + 1] = {
+			TriggerTime = "post",
+			Handle = handler,
+			Instrument = instrument,
 		}
 	end,
 
 	---Function to be called when a mouse button is pressed
 	---@param button integer
 	PressButton = function(self, button)
-		for i = 1,#self.SpecialHandlers do
-			self.SpecialHandlers[i]:Handle("press",button, self.PressedButtons)
+		for i = 1, #self.CustomHandlers do
+			if self.CustomHandlers[i].TriggerTime == "pre" then
+				self.CustomHandlers[i]:Handle("press",button, self.PressedButtons)
+			end
 		end
 		self.PressedButtons = self.PressedButtons .. EncodeButton(button)
 		local current = self.Event.Current;
 		local eventButtons = self.PressedButtons
 		local event = self.Event.List[eventButtons]
-		if event == nil and current.Length > 0 then
-			local _, pos = self.PressedButtons:find(current[current.Length])
+		if event == nil and #current > 0 then
+			local _, pos = self.PressedButtons:find(current[#current])
 			eventButtons = self.PressedButtons:sub(pos + 1)
 			event = self.Event.List[eventButtons]
 		end
 		if event then
-			current.Length = current.Length + 1
-			current[current.Length] = eventButtons
+			current[#current + 1] = eventButtons
 			if event.Action.Pressed then
 				event.Action.Pressed()
+			end
+		end
+		for i = 1, #self.CustomHandlers do
+			if self.CustomHandlers[i].TriggerTime == "post" then
+				self.CustomHandlers[i]:Handle("press",button, self.PressedButtons)
 			end
 		end
 	end,
@@ -598,8 +622,10 @@ KeyCombination = {
 	---Function to be called when a mouse button is released
 	---@param button integer
 	ReleaseButton = function(self, button)
-		for i = 1,#self.SpecialHandlers do
-			self.SpecialHandlers[i]:Handle("release",button, self.PressedButtons)
+		for i = 1, #self.CustomHandlers do
+			if self.CustomHandlers[i].TriggerTime == "pre" then
+				self.CustomHandlers[i]:Handle("release",button, self.PressedButtons)
+			end
 		end
 		local current = self.Event.Current
 		for index, cur in ipairs(current) do
@@ -608,16 +634,20 @@ KeyCombination = {
 				if event.Action.Released then
 					event.Action.Released()
 				end
-				for i = index, current.Length - 1 do
+				for i = index, #current - 1 do
 					current[i] = current[i + 1]
 				end
-				current[current.Length] = nil
-				current.Length = current.Length - 1
+				current[#current] = nil
 			end
 		end
 		local position = self.PressedButtons:find(EncodeButton(button))
 		if position then
 			self.PressedButtons = self.PressedButtons:sub(1, position - 1) .. self.PressedButtons:sub(position + 1)
+		end
+		for i = 1, #self.CustomHandlers do
+			if self.CustomHandlers[i].TriggerTime == "post" then
+				self.CustomHandlers[i]:Handle("release",button, self.PressedButtons)
+			end
 		end
 	end
 }
