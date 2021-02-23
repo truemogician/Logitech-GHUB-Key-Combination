@@ -1,4 +1,4 @@
---Test framework
+--#region API
 function OutputLogMessage(...)
 	print("Log : " .. ...)
 end
@@ -48,19 +48,20 @@ function EnablePrimaryMouseButtonEvents(arg)
 		print("Primary mouse button events are disabled")
 	end
 end
-local file
-local onFile
+--#endregion
+
 Test = {
 	FileMode = false,
-	FilePath = "src\\test\\commands.txt",
+	FilePath = "src\\test\\operations.txt",
 	Start = function(self, fileMode, filePath)
 		self.FileMode = fileMode or self.FileMode
 		self.FilePath = filePath or self.FilePath
+		local file
 		if self.FileMode then
 			file = io.open(self.FilePath,"r")
 			io.input(file)
 		end
-		onFile = self.FileMode
+		local onFile = self.FileMode
 		while true do
 			local line = io.read()
 			if onFile and line == nil then
@@ -82,9 +83,9 @@ Test = {
 			if event == "activate" or event == "a" then
 				OnEvent(RawEvent.Activated)
 			elseif event == "press" or event == "p" then
-				OnEvent(RawEvent.Pressed,arg)
+				OnEvent(RawEvent.Pressed, arg)
 			elseif event == "release" or event == "r" then
-				OnEvent(RawEvent.Released,arg)
+				OnEvent(RawEvent.Released, arg)
 			elseif event == "deactive" or event == "d" then
 				OnEvent(RawEvent.Deactivated)
 				break
