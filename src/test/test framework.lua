@@ -1,58 +1,94 @@
 --#region API
+
+---@vararg any Messages to log
 function OutputLogMessage(...)
 	print("Log : " .. ...)
 end
+
 function ClearLog()
-	print("Log cleaared")
+	print("Clear log")
 end
+
+---@param arg integer Millisecond
 function Sleep(arg)
-	print("Sleep " .. arg .. " ms")
+	print("Sleep for " .. arg .. " ms")
 end
+
+---@param arg string Keyboard key code
 function PressKey(arg)
-	print("Key " .. arg .. " is pressed")
+	print("Press keyboard key " .. arg)
 end
+
+---@param arg string Keyboard key code
 function ReleaseKey(arg)
-	print("Key " .. arg .. " is released")
+	print("Release keyboard key " .. arg)
 end
+
+---@param arg string Keyboard key code
 function PressAndReleaseKey(arg)
-	print("Key " .. arg .. " is pressed and released")
+	print("Press and release keyboard key " .. arg)
 end
+
+---@param arg string Mouse function code
 function PressMouseButton(arg)
-	print("Mouse button " .. arg .. " is pressed")
+	print("Press mouse button " .. arg)
 end
+
+---@param arg string Mouse function code
 function ReleaseMouseButton(arg)
-	print("Mouse button " .. arg .. " is released")
+	print("Release mouse button " .. arg)
 end
+
+---@param arg string Mouse function code
 function PressAndReleaseMouseButton(arg)
-	print("Mouse button " .. arg .. " is pressed and released")
+	print("Press and release mouse button " .. arg)
 end
+
+---@param arg integer Number of clicks
 function MoveMouseWheel(arg)
-	print("Mouse wheel is moved " .. arg .. " clicks")
+	print("Scroll mouse wheel " .. ((arg > 0) and "up " or "down ") .. arg .. " clicks")
 end
-function MoveMouseRelative(x,y)
-	print("Cursor is moved " .. x .. "," .. y .. " relatively")
+
+---@param x integer Number of horizontal pixels to move
+---@param y integer Number of vertical pixels to move
+function MoveMouseRelative(x, y)
+	print("Move cursor by (" .. x .. "," .. y .. ") relatively")
 end
-function MoveMouseTo(x,y)
-	print("Cursor is moved to " .. x .. "," .. y)
+
+---@param x integer @Abscissa
+---@param y integer @Ordinate
+function MoveMouseTo(x, y)
+	print("Move cursor to (" .. x .. "," .. y .. ")")
 end
+
 function AbortMacro()
-	print("All playing macros are aborted")
+	print("Aborted playing macro")
 end
+
+---@param name string Name of the macro
 function PlayMacro(name)
-	print("Macro \"" .. name .. "\" is played")
+	print("Play macro \"" .. name .. "\"")
 end
+
+---@param arg boolean
 function EnablePrimaryMouseButtonEvents(arg)
-	if arg == true then
-		print("Primary mouse button events are enabled")
-	else
-		print("Primary mouse button events are disabled")
-	end
+	print((arg and "Enable" or "Disable") .. " primary mouse button events")
 end
+
 --#endregion
 
 Test = {
+	---In file mode, script will read from file first and switch to console at EOF
+	---@type boolean
 	FileMode = false,
+
+	---Path of file to read in file mode
+	---@type string
 	FilePath = "src\\test\\operations.txt",
+
+	---Start the test
+	---@param fileMode? boolean
+	---@param filePath? string
 	Start = function(self, fileMode, filePath)
 		self.FileMode = fileMode or self.FileMode
 		self.FilePath = filePath or self.FilePath
