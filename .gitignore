@@ -3,5 +3,6 @@
 !/LICENSE
 !/README.md
 !/.vscode/
+!/tools/
 !/src/
 src/test/grammar.lua
