@@ -408,7 +408,7 @@ KeyCombination = {
 		---Register an event
 		---@param sequence integer[] @Sequence of mouse buttons
 		---@param action EventAction @Action to be taken when the event fires
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		Register = function(self, sequence, action, unorderedGroups)
 			local unorderedGroupsIndex
 			if unorderedGroups == "all" then
@@ -497,65 +497,65 @@ KeyCombination = {
 		end,
 
 		---Register an event firing when pressed
-		---@param sequence integer[] @Sequence of mouse buttons
-		---@param pAction fun() @Action to be taken when the event fires
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
-		RegisterPressed = function(self, sequence, pAction, unorderedGroups)
-			self:Register(sequence, { Pressed = pAction }, unorderedGroups)
+		---@param combination integer[] @Sequence of mouse buttons
+		---@param action fun() @Action to be taken when the event fires
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterPressed = function(self, combination, action, unorderedGroups)
+			self:Register(combination, { Pressed = action }, unorderedGroups)
 		end,
 
 		---Register an event firing when released
-		---@param sequence integer[] @Sequence of mouse buttons
-		---@param rAction fun() @Action to be taken when the event fires
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
-		RegisterReleased = function(self, sequence, rAction, unorderedGroups)
-			self:Register(sequence, { Released = rAction }, unorderedGroups)
+		---@param combination integer[] @Sequence of mouse buttons
+		---@param action fun() @Action to be taken when the event fires
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleased = function(self, combination, action, unorderedGroups)
+			self:Register(combination, { Released = action }, unorderedGroups)
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
-		---@param srcSequence integer[] @Mouse buttons combinations
-		---@param dstSequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
-		RegisterBind = function(self, srcSequence, dstSequence, unorderedGroups)
+		---@param combination integer[] @Mouse buttons combinations
+		---@param sequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterBind = function(self, combination, sequence, unorderedGroups)
 			local reversedDstCombination = {}
-			for i = 1,#dstSequence do
-				reversedDstCombination[i] = dstSequence[#dstSequence - i + 1]
+			for i = 1,#sequence do
+				reversedDstCombination[i] = sequence[#sequence - i + 1]
 			end
 
-			self:Register(srcSequence, {
-				Pressed = Action.KeysAndButtons:Press(dstSequence),
+			self:Register(combination, {
+				Pressed = Action.KeysAndButtons:Press(sequence),
 				Released = Action.KeysAndButtons:Release(reversedDstCombination)
 			}, unorderedGroups)
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
-		---@param srcSequence integer[] @Mouse buttons combinations
-		---@param dstSequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
-		RegisterReleasedBind = function(self, srcSequence, dstSequence, unorderedGroups)
-			self:Register(srcSequence, {
-				Released = Action.KeysAndButtons:Click(dstSequence),
+		---@param combination integer[] @Mouse buttons combinations
+		---@param sequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleasedBind = function(self, combination, sequence, unorderedGroups)
+			self:Register(combination, {
+				Released = Action.KeysAndButtons:Click(sequence),
 			}, unorderedGroups)
 		end,
 
 		---Register a macro playing action to released event
-		---@param srcSequence integer[] @Mouse buttons combinations
+		---@param combination integer[] @Mouse buttons combinations
 		---@param macroName string @Name of the macro
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
-		RegisterReleasedMacro = function(self, srcSequence, macroName, unorderedGroups)
-			self:Register(srcSequence, {
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleasedMacro = function(self, combination, macroName, unorderedGroups)
+			self:Register(combination, {
 				Released = Action.Macro:Play(macroName),
 			}, unorderedGroups)
 		end,
 
 		---Register a sequence of actions to released event
-		---@param srcSequence integer[] @Mouse buttons combinations
-		---@param actionSequence fun() @Array of actions
-		---@param unorderedGroups integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
-		RegisterReleasedSequence = function(self, srcSequence, actionSequence, unorderedGroups)
-			self:Register(srcSequence, {
+		---@param combination integer[] @Mouse buttons combinations
+		---@param actions fun()[] @Array of actions
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterReleasedSequence = function(self, combination, actions, unorderedGroups)
+			self:Register(combination, {
 				Released = function()
-					for _, action in ipairs(actionSequence) do
+					for _, action in ipairs(actions) do
 						action()
 					end
 				end
@@ -571,7 +571,7 @@ KeyCombination = {
 	---@param handler Handler @The handling function
 	---@param instrument? any @Instrumental variables for handler to use
 	AddPreHandler = function(self, handler, instrument)
-		self.CustomHandlersHandlers[#self.CustomHandlers + 1] = {
+		self.CustomHandlers[#self.CustomHandlers + 1] = {
 			TriggerTime = "pre",
 			Handle = handler,
 			Instrument = instrument,
