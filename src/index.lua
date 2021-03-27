@@ -1,7 +1,7 @@
 --#region Class Definations
 
 ---@alias numstr number|string
----@alias Handler fun(self:table, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
+---@alias Handler fun(self:ConfiguredHandler, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
 
 ---@class char:string @string whose length is 1
 
@@ -598,16 +598,24 @@ KeyCombination = {
 			end
 		end
 		self.PressedButtons = self.PressedButtons .. EncodeButton(button)
-		local current = self.Event.Current;
+		local current = self.Event.Current
 		local eventButtons = self.PressedButtons
 		local event = self.Event.List[eventButtons]
+		local start,finish
 		if event == nil and #current > 0 then
-			local _, pos = self.PressedButtons:find(current[#current])
-			eventButtons = self.PressedButtons:sub(pos + 1)
+			start, finish = self.PressedButtons:find(current[#current])
+			eventButtons = self.PressedButtons:sub(finish + 1)
 			event = self.Event.List[eventButtons]
 		end
 		if event then
-			current[#current + 1] = eventButtons
+			local index = #current + 1
+			if #current > 0 then
+				start = eventButtons:find(current[#current])
+				if start == 1 then
+					index = index - 1
+				end
+			end
+			current[index] = eventButtons
 			if event.Action.Pressed then
 				event.Action.Pressed()
 			end
