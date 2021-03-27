@@ -77,7 +77,7 @@ end
 
 --#endregion
 
-Test = {
+Simulator = {
 	---In file mode, script will read from file first and switch to console at EOF
 	---@type boolean
 	FileMode = false,

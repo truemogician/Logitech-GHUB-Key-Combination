@@ -14,8 +14,8 @@
   7. Enjoy the powerful mouse
   + Note that if your combination involves primary key and thus you disable it in the new profile, make sure you have alternative way, like using touch board, to do a primary click. Otherwise it's very likely that you lost control of your computer, since most users are not familiar with pure keyboard control.
 + ### **How to test or debug my assignment :question:**
-  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [test framework](src/test/test%20framework.lua) if you are familiar with lua.  
-  Refer to [example.lua](src/test/example.lua) for usage. It's recommended to write test operations in [operations.txt](src/test/operations.txt) like *example.lua*, reading from file makes it possible to use debugger.
+  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [console simulator](src/debug/console-simulator.lua) if you are familiar with lua.  
+  Refer to [example.lua](src/example/example.lua) for usage. It's recommended to write test operations in [operations.txt](src/example/operations.txt) like *example.lua*, reading from file makes it possible to use debugger.
 ## **:star2:Documentation:star2:**
 + ### **Terms** :microscope:
   1. ***Physical and functional mouse button***: Physical mouse buttons are the ones on your mouse, you can press them with your hands, and functional mouse buttons are the default action allocated to major mouse buttons by the operating system. For example, your primary button are default binded to primary click action. So in short, physical mouse buttons are real buttons, and functional mouse buttons are actions in the system. We distinguish the concepts here because in GHUB, you're fully able to change the default action of the major buttons like assign primary click to secondary button and secondary click to primary button.  
@@ -50,7 +50,7 @@
       A collection of mouse functions like primary click and secondary click. Same as *Button*, it's just help you to memorize.
   6. #### ***KeyCombination***
       The core table of the framework. But for users, it's just used for adding custom handlers. It's only for few special behaviors beyond the basic framework, which won't be in need in most cases.   
-	    Refer to [example.lua](src/test/example.lua) for implementation details.
+	    Refer to [example.lua](src/example/example.lua) for implementation details.
 + ### **Registration** :pencil:
   In most cases, all the code you need to write yourself is registering. Here's some most commonly used methods.  
   1. #### ***RegisterBind***

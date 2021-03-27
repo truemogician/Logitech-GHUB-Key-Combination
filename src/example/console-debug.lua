@@ -1,6 +1,6 @@
 package.path = package.path .. ";?.lua"
-require "src/test/test framework"
-require "src/key combination"
+require "src/debug/console-simulator"
+require "src/index"
 
 local auxilary = { count = 0 }
 KeyCombination:AddPostHandler(
@@ -28,4 +28,4 @@ Event:RegisterReleasedMacro(
 	{ Button.Secondary, Button.Primary }
 )
 
-Test:Start(true)
+Simulator:Start(true, "src/example/operations.txt")
