@@ -412,7 +412,7 @@ KeyCombination = {
 		Register = function(self, sequence, action, unorderedGroups)
 			local unorderedGroupsIndex
 			if unorderedGroups == "all" then
-				unorderedGroups = { sequence }
+				unorderedGroups = { table.copy(sequence) }
 			elseif type(unorderedGroups) == "table" then
 				if type(unorderedGroups[1]) == "number" then
 					unorderedGroups = { unorderedGroups }
