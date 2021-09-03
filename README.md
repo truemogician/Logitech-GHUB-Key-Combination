@@ -1,9 +1,9 @@
 # **:sparkles:Key Combination Framework for Logitech GHUB:sparkles:**
 ## **:star2:Introduction:star2:**
 + ### **What is it :question:**
-  It is a lua script that builds a framework for Logitech GHUB to manage more complated key combination events than G-Shift provided by GUB itself.
+  It is a lua script that builds a framework for Logitech GHUB to manage more complicated key combination events than the G-Shift provided by GHUB itself.
 + ### **What's it used for :question:**
-  Extend the functionality of Logi mouses. With this framework, users can easily assign keyboard or macro mappings to all kinds of mouse button combinations. The number of keys isn't the limit, as long as your fingers could reach them at the same time :grin:.
+  Extend the functionality of Logitech mice. With this framework, users can easily assign keyboard or macro mappings to all kinds of mouse button combinations. The number of keys isn't the limit, as long as your fingers could reach them at the same time :grin:.
 + ### **How to use it :question:**
   1. Download **key combination.lua** from the latest release  
   2. Append a few lua code to register events and add custom handlers
