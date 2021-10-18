@@ -1,5 +1,5 @@
 package.path = package.path .. ";?.lua"
-require "src/debug/console-simulator"
+require "src/debug/simulator"
 require "src/index"
 
 local auxilary = { count = 0 }
@@ -16,8 +16,8 @@ KeyCombination:AddPostHandler(
 	end,
 	auxilary
 )
-Event:RegisterBind({ Button.Primary }, { Mouse.PrimaryClick })
-Event:RegisterBind({ Button.Secondary}, { Mouse.SecondaryClick })
+Event:RegisterBind(Button.Primary, Mouse.PrimaryClick)
+Event:RegisterBind(Button.Secondar, Mouse.SecondaryClick)
 Event:RegisterReleasedBind(
 	{ Button.SideMiddle, Button.Primary },
 	{ "a", "b", { "c", "d", { "e", "f" } }, "g" }
@@ -28,4 +28,4 @@ Event:RegisterReleasedMacro(
 	{ Button.Secondary, Button.Primary }
 )
 
-Simulator:Start(true, "src/example/operations.txt")
+Simulator:Start("file", "src/example/operations.txt")
