@@ -4,4 +4,8 @@
 !/README.md
 !/.vscode
 !/src
-/src/test
+/src/*
+!/src/debug
+!/src/example
+!/src/tools
+!/src/index.lua

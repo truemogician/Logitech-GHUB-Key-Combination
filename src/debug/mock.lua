@@ -1,12 +1,12 @@
 --#region API
 
 function ClearLog()
-	OutputLogMessage("Clear log" .. "\n")
+	OutputLogMessage("Clear log\n")
 end
 
 ---@param arg integer Millisecond
 function Sleep(arg)
-	OutputLogMessage("Sleep for " .. arg .. " ms" .. "\n")
+	OutputLogMessage("Sleep for " .. arg .. " ms\n")
 end
 
 ---@param arg string Keyboard key code
@@ -41,33 +41,33 @@ end
 
 ---@param arg integer Number of clicks
 function MoveMouseWheel(arg)
-	OutputLogMessage("Scroll mouse wheel " .. ((arg > 0) and "up " or "down ") .. arg .. " clicks" .. "\n")
+	OutputLogMessage("Scroll mouse wheel " .. ((arg > 0) and "up " or "down ") .. arg .. " clicks\n")
 end
 
 ---@param x integer Number of horizontal pixels to move
 ---@param y integer Number of vertical pixels to move
 function MoveMouseRelative(x, y)
-	OutputLogMessage("Move cursor by (" .. x .. "," .. y .. ") relatively" .. "\n")
+	OutputLogMessage("Move cursor by (" .. x .. "," .. y .. ") relatively\n")
 end
 
 ---@param x integer @Abscissa
 ---@param y integer @Ordinate
 function MoveMouseTo(x, y)
-	OutputLogMessage("Move cursor to (" .. x .. "," .. y .. ")" .. "\n")
+	OutputLogMessage("Move cursor to (" .. x .. "," .. y .. ")\n")
 end
 
 function AbortMacro()
-	OutputLogMessage("Aborted playing macro" .. "\n")
+	OutputLogMessage("Abort playing macro\n")
 end
 
 ---@param name string Name of the macro
 function PlayMacro(name)
-	OutputLogMessage("Play macro \"" .. name .. "\"" .. "\n")
+	OutputLogMessage("Play macro \"" .. name .. "\"\n")
 end
 
 ---@param arg boolean
 function EnablePrimaryMouseButtonEvents(arg)
-	OutputLogMessage((arg and "Enable" or "Disable") .. " primary mouse button events" .. "\n")
+	OutputLogMessage((arg and "Enable" or "Disable") .. " primary mouse button events\n")
 end
 
 --#endregion
