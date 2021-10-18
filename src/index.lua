@@ -402,7 +402,7 @@ KeyCombination = {
 		List = {},
 
 		---Events currently on effect
-		---@type Event[]
+		---@type string[]
 		Current = {},
 
 		---Register an event
@@ -663,7 +663,7 @@ KeyCombination = {
 			local index = #current + 1
 			if #current > 0 then
 				start = eventButtons:find(current[#current])
-				if start == 1 then
+				if start == 1 and  not event.Action.Pressed then
 					index = index - 1
 				end
 			end
@@ -689,16 +689,26 @@ KeyCombination = {
 		end
 		local btn = EncodeButton(button)
 		local current = self.Event.Current
-		for index, cur in ipairs(current) do
+		for i, cur in ipairs(current) do
 			local event = self.Event.List[cur]
 			if event and cur:find(btn) then
 				if event.Action.Released then
 					event.Action.Released()
 				end
-				for i = index, #current - 1 do
-					current[i] = current[i + 1]
+				current[i] = ""
+			end
+		end
+		local cursor = 1
+		local length = #current
+		for i = 1, length do
+			if (current[i] == "") then
+				current[i] = nil
+			else
+				if cursor ~= i then
+					current[cursor] = current[i]
+					current[i] = nil
 				end
-				current[#current] = nil
+				cursor = cursor + 1
 			end
 		end
 		local position = self.PressedButtons:find(btn)
