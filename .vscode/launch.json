@@ -1,16 +1,14 @@
 {
 	"configurations": [
 		{
-			"name": "test",
-			"type": "lua",
+			"name": "Test",
+			"type": "lua-local",
 			"request": "launch",
-			"stopOnEntry": true,
-			"program": "${workspaceFolder}/src/test/test.lua",
-			"cwd": "${workspaceFolder}",
-			"path": "${workspaceFolder}/?.lua",
-			"cpath": "${workspaceFolder}/?.dll",
-			"arg": [],
-			"consoleCoding": "utf8"
+			"program": {
+				"lua": "lua",
+				"file": "${workspaceFolder}/src/test/test.lua"
+			},
+			"cwd": "${workspaceFolder}"
 		}
 	]
 }
