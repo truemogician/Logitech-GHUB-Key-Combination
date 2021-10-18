@@ -504,21 +504,17 @@ KeyCombination = {
 			if (type(combination) == "number") then
 				combination = { combination }
 			end
-			if (type(action) == "function") then
-				self:Register(combination, { Pressed = action }, unorderedGroups)
-			else
-				self:Register(
-					combination,
-					{
-						Pressed = function()
-							for _, act in ipairs(action) do
-								act()
-							end
+			self:Register(
+				combination,
+				{
+					Pressed = type(action) == "function" and action or function()
+						for _, act in ipairs(action) do
+							act()
 						end
-					},
-					unorderedGroups
-				)
-			end
+					end
+				},
+				unorderedGroups
+			)
 		end,
 
 		---Register an event firing when released
@@ -529,21 +525,42 @@ KeyCombination = {
 			if (type(combination) == "number") then
 				combination = { combination }
 			end
-			if (type(action) == "function") then
-				self:Register(combination, { Released = action }, unorderedGroups)
-			else
-				self:Register(
-					combination,
-					{
-						Released = function()
-							for _, act in ipairs(action) do
-								act()
-							end
+			self:Register(
+				combination,
+				{
+					Released = type(action) == "function" and action or function()
+						for _, act in ipairs(action) do
+							act()
 						end
-					},
-					unorderedGroups
-				)
+					end
+				},
+				unorderedGroups
+			)
+		end,
+
+		---Register both pressed and released events
+		---@param combination integer|integer[] @Sequence of mouse buttons
+		---@param pAction fun()|fun()[] @An action or a list of actions to be performed on pressed
+		---@param rAction fun()|fun()[] @An action or a list of actions to be performed on released
+		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		RegisterPressedAndReleased = function(self, combination, pAction, rAction, unorderedGroups)
+			if (type(combination) == "number") then
+				combination = { combination }
 			end
+			---@type EventAction
+			local eventAction = {
+				Pressed = type(pAction) == "function" and pAction or function()
+					for _, act in ipairs(pAction) do
+						act()
+					end
+				end,
+				Released = type(rAction) == "function" and rAction or function()
+					for _, act in ipairs(rAction) do
+						act()
+					end
+				end,
+			}
+			self:Register(combination, eventAction, unorderedGroups)
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
@@ -636,7 +653,7 @@ KeyCombination = {
 		local current = self.Event.Current
 		local eventButtons = self.PressedButtons
 		local event = self.Event.List[eventButtons]
-		local start,finish
+		local start, finish
 		if event == nil and #current > 0 then
 			start, finish = self.PressedButtons:find(current[#current])
 			eventButtons = self.PressedButtons:sub(finish + 1)
@@ -670,10 +687,11 @@ KeyCombination = {
 				self.CustomHandlers[i]:Handle("release",button, self.PressedButtons)
 			end
 		end
+		local btn = EncodeButton(button)
 		local current = self.Event.Current
 		for index, cur in ipairs(current) do
 			local event = self.Event.List[cur]
-			if event and cur:find(EncodeButton(button)) then
+			if event and cur:find(btn) then
 				if event.Action.Released then
 					event.Action.Released()
 				end
@@ -683,7 +701,7 @@ KeyCombination = {
 				current[#current] = nil
 			end
 		end
-		local position = self.PressedButtons:find(EncodeButton(button))
+		local position = self.PressedButtons:find(btn)
 		if position then
 			self.PressedButtons = self.PressedButtons:sub(1, position - 1) .. self.PressedButtons:sub(position + 1)
 		end
