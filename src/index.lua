@@ -497,11 +497,14 @@ KeyCombination = {
 		end,
 
 		---Register an event firing when pressed
-		---@param combination integer[] @Sequence of mouse buttons
+		---@param combination integer|integer[] @Sequence of mouse buttons
 		---@param action fun()|fun()[] @An action or a list of actions to be performed when the event fires
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterPressed = function(self, combination, action, unorderedGroups)
-			if (type(action) =="function") then
+			if (type(combination) == "number") then
+				combination = { combination }
+			end
+			if (type(action) == "function") then
 				self:Register(combination, { Pressed = action }, unorderedGroups)
 			else
 				self:Register(
@@ -519,11 +522,14 @@ KeyCombination = {
 		end,
 
 		---Register an event firing when released
-		---@param combination integer[] @Sequence of mouse buttons
+		---@param combination integer|integer[] @Sequence of mouse buttons
 		---@param action fun()|fun()[] @An action or a list of actions to be performed when the event fires
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterReleased = function(self, combination, action, unorderedGroups)
-			if (type(action) =="function") then
+			if (type(combination) == "number") then
+				combination = { combination }
+			end
+			if (type(action) == "function") then
 				self:Register(combination, { Released = action }, unorderedGroups)
 			else
 				self:Register(
@@ -541,10 +547,16 @@ KeyCombination = {
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
-		---@param combination integer[] @Mouse buttons combinations
-		---@param sequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param combination integer|integer[] @Mouse buttons combinations
+		---@param sequence numstr|numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterBind = function(self, combination, sequence, unorderedGroups)
+			if (type(combination) == "number") then
+				combination = { combination }
+			end
+			if (type(sequence) ~= "table") then
+				sequence = { sequence }
+			end
 			local reversedDstCombination = {}
 			for i = 1,#sequence do
 				reversedDstCombination[i] = sequence[#sequence - i + 1]
@@ -557,20 +569,29 @@ KeyCombination = {
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
-		---@param combination integer[] @Mouse buttons combinations
-		---@param sequence numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param combination integer|integer[] @Mouse buttons combinations
+		---@param sequence numstr|numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterReleasedBind = function(self, combination, sequence, unorderedGroups)
+			if (type(combination) == "number") then
+				combination = { combination }
+			end
+			if (type(sequence) ~= "table") then
+				sequence = { sequence }
+			end
 			self:Register(combination, {
 				Released = Action.KeysAndButtons:Click(sequence),
 			}, unorderedGroups)
 		end,
 
 		---Register a macro playing action to released event
-		---@param combination integer[] @Mouse buttons combinations
+		---@param combination integer|integer[] @Mouse buttons combinations
 		---@param macroName string @Name of the macro
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterReleasedMacro = function(self, combination, macroName, unorderedGroups)
+			if (type(combination) == "number") then
+				combination = { combination }
+			end
 			self:Register(combination, {
 				Released = Action.Macro:Play(macroName),
 			}, unorderedGroups)
