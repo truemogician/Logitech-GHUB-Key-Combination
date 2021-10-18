@@ -1,41 +1,19 @@
-OutputLogMessage = print;
+function OutputLogMessage(message)
+	print(message:sub(1,#message-1))
+end
 
 package.path = package.path .. ";?.lua"
 require "src/debug/mock"
 
+---@alias SimulatorMode "file"|"console"|"argument"
+
 Simulator = {
-	---In file mode, script will read from file first and switch to console at EOF
-	---@type boolean
-	FileMode = false,
-
-	---Path of file to read in file mode
-	---@type string
-	FilePath = "src\\test\\operations.txt",
-
-	---Start the test
-	---@param fileMode? boolean
-	---@param filePath? string
-	Start = function(self, fileMode, filePath)
-		self.FileMode = fileMode or self.FileMode
-		self.FilePath = filePath or self.FilePath
-		local file
-		if self.FileMode then
-			file = io.open(self.FilePath,"r")
-			io.input(file)
-		end
-		local onFile = self.FileMode
-		while true do
-			local line = io.read()
-			if onFile and line == nil then
-				file:close()
-				io.input(io.stdin)
-				onFile = false
-				line = io.read()
-			end
-			if onFile then
-				print(line)
-			end
-			local _, _, event, arg = line:find("([^%s]+)%s?([^%s]*)")
+	---Start the simulator
+	---@param mode SimulatorMode
+	---@param param? string|string[] File path in file mode, commands in argument mode
+	Start = function(self, mode, param)
+		function Trigger(cmd)
+			local _, _, event, arg = cmd:find("([^%s]+)%s?([^%s]*)")
 			event = event:lower()
 			if arg:isnumber() then
 				arg = arg:tonumber()
@@ -50,7 +28,45 @@ Simulator = {
 				OnEvent(RawEvent.Released, arg)
 			elseif event == "deactive" or event == "d" then
 				OnEvent(RawEvent.Deactivated)
-				break
+				return false
+			end
+			return true
+		end
+		if mode == "argument" then
+			for _, line in ipairs(param) do
+				print(line)
+				if not Trigger(line) then
+					return
+				end
+			end
+			io.input(io.stdin)
+			while true do
+				local line = io.read()
+				if not Trigger(line) then
+					break
+				end
+			end
+		else
+			local file
+			if mode == "file" then
+				file = io.open(param,"r")
+				io.input(file)
+			end
+			local onFile = self.FileMode
+			while true do
+				local line = io.read()
+				if onFile and line == nil then
+					file:close()
+					io.input(io.stdin)
+					onFile = false
+					line = io.read()
+				end
+				if onFile then
+					print(line)
+				end
+				if not Trigger(line) then
+					break
+				end
 			end
 		end
 	end,
