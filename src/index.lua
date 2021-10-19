@@ -1,3 +1,5 @@
+--#region Framework
+
 --#region Class Definations
 
 ---@alias numstr number|string
@@ -143,7 +145,7 @@ Action = {
 		end,
 		---Clear GHUB script console
 		---@return function
-		Clear = function()
+		Clear = function(self)
 			return function()
 				ClearLog()
 			end
@@ -331,7 +333,7 @@ Action = {
 		---Sleep for some time
 		---@param duration integer @Number of millisecond to sleep
 		---@return function
-		Sleep = function(duration)
+		Sleep = function(self, duration)
 			return function()
 				Sleep(duration)
 			end
@@ -794,4 +796,6 @@ Action.Cursor.Resolution = {
 }
 Button = MouseModel[Settings.MouseModel]
 Event = KeyCombination.Event
+--#endregion
+
 --#endregion
