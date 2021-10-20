@@ -648,7 +648,7 @@ KeyCombination = {
 	PressButton = function(self, button)
 		for i = 1, #self.CustomHandlers do
 			if self.CustomHandlers[i].TriggerTime == "pre" then
-				self.CustomHandlers[i]:Handle("press",button, self.PressedButtons)
+				self.CustomHandlers[i]:Handle("press", button, self.PressedButtons)
 			end
 		end
 		self.PressedButtons = self.PressedButtons .. EncodeButton(button)
@@ -664,8 +664,8 @@ KeyCombination = {
 		if event then
 			local index = #current + 1
 			if #current > 0 then
-				start = eventButtons:find(current[#current])
-				if start == 1 and  not event.Action.Pressed then
+				local lastEventButtons = current[#current]
+				if eventButtons:find(lastEventButtons) == 1 and not self.Event.List[lastEventButtons].Action.Pressed then
 					index = index - 1
 				end
 			end
@@ -676,7 +676,7 @@ KeyCombination = {
 		end
 		for i = 1, #self.CustomHandlers do
 			if self.CustomHandlers[i].TriggerTime == "post" then
-				self.CustomHandlers[i]:Handle("press",button, self.PressedButtons)
+				self.CustomHandlers[i]:Handle("press", button, self.PressedButtons)
 			end
 		end
 	end,
