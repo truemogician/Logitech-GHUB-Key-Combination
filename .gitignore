@@ -1,11 +1,2 @@
-/*
-!/.gitignore
-!/LICENSE
-!/README.md
-!/.vscode
-!/src
-/src/*
-!/src/debug
-!/src/example
-!/src/tools
-!/src/index.lua
+test
+playground
