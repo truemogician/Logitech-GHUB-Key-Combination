@@ -292,6 +292,8 @@ Action = {
 		end,
 	},
 	Cursor = {
+		---Whether multiple monitors is connected
+		MultiMonitor = false,
 		---Resolution of the screen
 		Resolution = { Width = 1920, Height = 1080 },
 		---Move cursor by some pixels
@@ -300,7 +302,12 @@ Action = {
 		---@return function
 		Move = function(self, x, y)
 			return function()
-				MoveMouseRelative(x * 65535 / self.Resolution.Width, y * 65535 / self.Resolution.Height)
+				local curx, cury = GetMousePosition()
+				if (self.MultiMonitor) then
+					MoveMouseToVirtual(curx + math.floor(x * 65535 / self.Resolution.Width), cury + math.floor(y * 65535 / self.Resolution.Height))
+				else
+					MoveMouseTo(curx + math.floor(x * 65535 / self.Resolution.Width), cury + math.floor(y * 65535 / self.Resolution.Height))
+				end
 			end
 		end,
 		---Move cursor to certian position
@@ -309,7 +316,11 @@ Action = {
 		---@return function
 		MoveTo = function(self, x, y)
 			return function()
-				MoveMouseTo(x * 65535 / self.Resolution.Width, y * 65535 / self.Resolution.Height)
+				if (self.MultiMonitor) then
+					MoveMouseToVirtual(math.floor(x * 65535 / self.Resolution.Width), math.floor(y * 65535 / self.Resolution.Height))
+				else
+					MoveMouseTo(math.floor(x * 65535 / self.Resolution.Width), math.floor(y * 65535 / self.Resolution.Height))
+				end
 			end
 		end,
 	},
