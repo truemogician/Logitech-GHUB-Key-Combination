@@ -5,17 +5,17 @@
 + ### **What's it used for :question:**
   Extend the functionality of Logitech mice. With this framework, users can easily assign keyboard or macro mappings to all kinds of mouse button combinations. The number of keys isn't the limit, as long as your fingers could reach them at the same time :grin:.
 + ### **How to use it :question:**
-  1. Download **key combination.lua** from the latest release  
+  1. Clone this repository, or simply download **[index.lua](src/index.lua)**  
   2. Append a few lua code to register events and add custom handlers
   3. Open GHUB and add a new profile for your target application
-  4. Enter the new profile, switch to "Assignments" tab and disable the buttons that you'll register in the script
+  4. Enter the new profile, switch to "Assignments" tab and disable the buttons that you'll register in the script. It is recommended to disable all the buttons in case of conflict
   5. Create a new script through GHUB
   6. Copy and paste the framework with your own code into the GHUB script editor and save it
-  7. Enjoy the powerful mouse
-  + Note that if your combination involves primary key and thus you disable it in the new profile, make sure you have alternative way, like using touch board, to do a primary click. Otherwise it's very likely that you lost control of your computer, since most users are not familiar with pure keyboard control.
+  7. Enjoy your enhanced mouse
+  + Note that if your combination involves primary key and thus you disable it in the new profile, make sure you have alternative way, like using touchpad, to perform a primary click. Otherwise it's very likely that you lost control of your computer, since most users are not familiar with pure keyboard control.
 + ### **How to test or debug my assignment :question:**
-  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [console simulator](src/debug/console-simulator.lua) if you are familiar with lua.  
-  Refer to [example.lua](src/example/example.lua) for usage. It's recommended to write test operations in [operations.txt](src/example/operations.txt) like *example.lua*, reading from file makes it possible to use debugger.
+  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [simulator](src/debug/simulator.lua) if you are familiar with lua.  
+  Refer to an [example](src/example/console-debug.lua) for usage. It's recommended to write test operations in [operations.txt](src/example/operations.txt), reading from file makes it possible to use debugger.
 ## **:star2:Documentation:star2:**
 + ### **Terms** :microscope:
   1. ***Physical and functional mouse button***: Physical mouse buttons are the ones on your mouse, you can press them with your hands, and functional mouse buttons are the default action allocated to major mouse buttons by the operating system. For example, your primary button are default binded to primary click action. So in short, physical mouse buttons are real buttons, and functional mouse buttons are actions in the system. We distinguish the concepts here because in GHUB, you're fully able to change the default action of the major buttons like assign primary click to secondary button and secondary click to primary button.  
@@ -28,9 +28,9 @@
     Obviously, you cannot press a pressed button, thus such event will never be triggered in real application.
   2. ***Don't rgister a combination more than once*** :x:  
     If one combination is registered multiple times, only the latest assignment will be on effect.
-  3. ***Register pressed event for leaf combination only*** :x:  
-    Any registered pressed events of *non-leaf combination* will be removed to avoid misbehavior.  
-  4. ***Register released event only if possible*** :heavy_check_mark:  
+  3. ***Try to avoid registering pressed event for non-leaf combination*** :heavy_exclamation_mark:  
+    Non-leaf combinations are possible to have a pressed event, however, since the framework cannot predict whether more buttons will be pressed when the registered combination is pressed, the pressed event will always fire even if you're actually performing a combination that prefix this combination.
+  4. ***Register only the released event if possible*** :heavy_check_mark:  
     It could be supposed from above that released-only event leaves more possibility, thus if pressing action is not in demand, switch to released-only register methods.
 + ### **Globals** :globe_with_meridians:
   1. #### ***Action***
@@ -50,7 +50,7 @@
       A collection of mouse functions like primary click and secondary click. Same as *Button*, it's just help you to memorize.
   6. #### ***KeyCombination***
       The core table of the framework. But for users, it's just used for adding custom handlers. It's only for few special behaviors beyond the basic framework, which won't be in need in most cases.   
-	    Refer to [example.lua](src/example/example.lua) for implementation details.
+	    Refer to [example](src/example/console-debug.lua) for implementation details.
 + ### **Registration** :pencil:
   In most cases, all the code you need to write yourself is registering. Here's some most commonly used methods.  
   1. #### ***RegisterBind***
