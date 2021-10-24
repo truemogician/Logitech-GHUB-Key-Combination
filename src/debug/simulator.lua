@@ -1,5 +1,5 @@
-function OutputLogMessage(message)
-	print(message:sub(1,#message-1))
+function OutputLogMessage(message, ...)
+	print(message:sub(1, #message - 1), ...)
 end
 
 package.path = package.path .. ";?.lua"
