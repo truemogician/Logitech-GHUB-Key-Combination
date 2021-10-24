@@ -300,7 +300,7 @@ Action = {
 		---@return function
 		Move = function(self, x, y)
 			return function()
-				MoveMouseRelative(x * self.Resolution.Width / 65535, y * self.Resolution.Height / 65535)
+				MoveMouseRelative(x * 65535 / self.Resolution.Width, y * 65535 / self.Resolution.Height)
 			end
 		end,
 		---Move cursor to certian position
@@ -309,7 +309,7 @@ Action = {
 		---@return function
 		MoveTo = function(self, x, y)
 			return function()
-				MoveMouseTo(x*self.Resolution.Width/65535, y*self.Resolution.Height/65535)
+				MoveMouseTo(x * 65535 / self.Resolution.Width, y * 65535 / self.Resolution.Height)
 			end
 		end,
 	},
@@ -655,9 +655,9 @@ KeyCombination = {
 		local current = self.Event.Current
 		local eventButtons = self.PressedButtons
 		local event = self.Event.List[eventButtons]
-		local start, finish
 		if event == nil and #current > 0 then
-			start, finish = self.PressedButtons:find(current[#current])
+			local finish
+			_, finish = self.PressedButtons:find(current[#current])
 			eventButtons = self.PressedButtons:sub(finish + 1)
 			event = self.Event.List[eventButtons]
 		end
