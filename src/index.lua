@@ -791,6 +791,21 @@ local MouseModel = {
 		Back = 9,
 		WheelRight = 10,
 		WheelLeft = 11,
+	},
+	G604LightSpeed = {
+		Primary = 1,
+		Secondary = 2,
+		Middle = 3,
+		SideBackDown = 4,
+		SideMiddleDown = 5,
+		SideFrontDown = 6,
+		SideBackUp = 7,
+		SideMiddleUp = 8,
+		SideFrontUp = 9,
+		AuxiliaryBack = 10,
+		AuxiliaryFront = 11,
+		WheelLeft = 12,
+		WheelRight = 13
 	}
 }
 
