@@ -11,30 +11,30 @@ end
 
 ---@param arg string Keyboard key code
 function PressKey(arg)
-	OutputLogMessage("Press keyboard key %d\n", arg)
+	OutputLogMessage("Press keyboard key %s\n", arg)
 end
 
 ---@param arg string Keyboard key code
 function ReleaseKey(arg)
-	OutputLogMessage("Release keyboard key %d\n", arg)
+	OutputLogMessage("Release keyboard key %s\n", arg)
 end
 
 ---@param arg string Keyboard key code
 function PressAndReleaseKey(arg)
-	OutputLogMessage("Press and release keyboard key %d\n", arg)
+	OutputLogMessage("Press and release keyboard key %s\n", arg)
 end
 
----@param arg string Mouse function code
+---@param arg integer Mouse function code
 function PressMouseButton(arg)
 	OutputLogMessage("Press mouse button %d\n", arg)
 end
 
----@param arg string Mouse function code
+---@param arg integer Mouse function code
 function ReleaseMouseButton(arg)
 	OutputLogMessage("Release mouse button %d\n", arg)
 end
 
----@param arg string Mouse function code
+---@param arg integer Mouse function code
 function PressAndReleaseMouseButton(arg)
 	OutputLogMessage("Press and release mouse button %d\n", arg)
 end
