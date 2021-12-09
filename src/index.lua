@@ -735,7 +735,22 @@ KeyCombination = {
 		end
 	end
 }
+--#endregion
 
+--#region Activation & Deactivation Handlers
+---@type fun()[]
+ActivationHandlers = {
+	Add = function(self, handler)
+		self[#self+1] = handler
+	end
+}
+
+---@type fun()[]
+DeactivationHandlers = {
+	Add = function(self, handler)
+		self[#self+1] = handler
+	end
+}
 --#endregion
 
 --#region API Event Handling
@@ -755,7 +770,15 @@ EnablePrimaryMouseButtonEvents(true)
 ---@param event string
 ---@param arg integer
 function OnEvent(event, arg)
-	if event == RawEvent.Pressed then
+	if event == RawEvent.Activated then
+		for _, handler in ipairs(ActivationHandlers) do
+			handler()
+		end
+	elseif event == RawEvent.Deactivated then
+		for _, handler in ipairs(DeactivationHandlers) do
+			handler()
+		end
+	elseif event == RawEvent.Pressed then
 		KeyCombination:PressButton(arg)
 	elseif event == RawEvent.Released then
 		KeyCombination:ReleaseButton(arg)
