@@ -3,6 +3,8 @@
 --#region Class Definations
 
 ---@alias numstr number|string
+---@alias Keyboard "'escape'"|"'f1'"|"'f1'" |"'f2'" |"'f3'" |"'f4'" |"'f5'" |"'f6'" |"'f7'" |"'f8'" |"'f9'" |"'f10'" |"'f11'" |"'f12'" |"'f13'" |"'f14'" |"'f15'" |"'f16'" |"'f17'" |"'f18'" |"'f19'" |"'f20'" |"'f21'" |"'f22'" |"'f23'" |"'f24'"|"'printscreen'" |"'scrolllock'" |"'pause'" |"'tilde'" |"'1'" |"'2'" |"'3'" |"'4'" |"'5'" |"'6'" |"'7'" |"'8'" |"'9'" |"'0'" |"'minus'" |"'equal'" |"'backspace'" |"'tab'" |"'q'" |"'w'" |"'e'" |"'r'" |"'t'" |"'y'" |"'u'" |"'i'" |"'o'" |"'p'" |"'lbracket'" |"'rbracket'" |"'backslash'" |"'capslock'" |"'a'" |"'s'" |"'d'" |"'f'" |"'g'" |"'h'" |"'j'" |"'k'" |"'l'" |"'semicolon'" |"'quote'" |"'enter'" |"'lshift'" |"'non_us_slash'" |"'z'" |"'x'" |"'c'" |"'v'" |"'b'" |"'n'" |"'m'" |"'comma'" |"'period'" |"'slash'" |"'rshift'" |"'lctrl'" |"'lgui'" |"'lalt'" |"'spacebar'" |"'ralt'" |"'rgui'" |"'appkey'" |"'rctrl'" |"'insert'" |"'home'" |"'pageup'" |"'delete'" |"'end'" |"'pagedown'" |"'up'" |"'left'" |"'down'" |"'right'" |"'numlock'" |"'numslash'" |"'numminus'" |"'num7'" |"'num8'" |"'num9'" |"'numplus'" |"'num4'" |"'num5'" |"'num6'" |"'num1'" |"'num2'" |"'num3'" |"'numenter'" |"'num0'" |"'numperiod'"
+---@alias MouseKeyboard integer|Keyboard
 ---@alias Handler fun(self:ConfiguredHandler, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
 
 ---@class char:string @string whose length is 1
@@ -153,7 +155,7 @@ Action = {
 	},
 	KeysAndButtons = {
 		---Press buttons and keys in a sequence
-		---@param keysAndButtons numstr[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
 		Press = function (self, keysAndButtons)
 			return function()
@@ -171,7 +173,7 @@ Action = {
 			end
 		end,
 		---Release buttons and keys in a sequence
-		---@param keysAndButtons numstr[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
 		Release = function (self, keysAndButtons)
 			return function()
@@ -189,7 +191,7 @@ Action = {
 			end
 		end,
 		---Press or release buttons and keys in a sequence
-		---@param keysAndButtons numstr[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
+		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
 		---@return function
 		PressAndRelease = function(self, keysAndButtons)
 			return function()
@@ -578,7 +580,7 @@ KeyCombination = {
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
 		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param sequence numstr|numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param sequence MouseKeyboard|MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterBind = function(self, combination, sequence, unorderedGroups)
 			if (type(combination) == "number") then
@@ -600,7 +602,7 @@ KeyCombination = {
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
 		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param sequence numstr|numstr[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param sequence MouseKeyboard|MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
 		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
 		RegisterReleasedBind = function(self, combination, sequence, unorderedGroups)
 			if (type(combination) == "number") then
@@ -834,7 +836,9 @@ local MouseModel = {
 
 --#endregion
 
---#region Initialize Settings
+--#endregion
+
+--#region Configurations
 Settings = {
 	ScreenResolution = { 1920, 1080 },
 	MouseModel = "G502Hero"
@@ -845,6 +849,4 @@ Action.Cursor.Resolution = {
 }
 Button = MouseModel[Settings.MouseModel]
 Event = KeyCombination.Event
---#endregion
-
 --#endregion

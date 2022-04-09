@@ -1,11 +1,12 @@
 {
-    "Lua.diagnostics.globals": [
-        "Event",
-        "Test",
-        "Button",
-        "Mouse",
-        "RawEvent",
-        "OnEvent",
-        "KeyCombination"
-    ]
+	"Lua.diagnostics.globals": [
+		"Event",
+		"Test",
+		"Button",
+		"Mouse",
+		"RawEvent",
+		"OnEvent",
+		"KeyCombination",
+		"GetMousePosition"
+	]
 }
