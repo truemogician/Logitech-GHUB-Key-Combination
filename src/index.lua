@@ -50,15 +50,17 @@ end
 ---@return number
 function string:tonumber()
 	local function parseInteger(...)
-		local params = {...}
+		local params = { ... }
 		local result = 0
 		for _, v in ipairs(params) do
-			result = result*10 + v - 48
+			result = result * 10 + v - 48
 		end
 		return result
 	end
+
 	local _, _, sign, integerString, decimalString = self:find("^([+-]?)(%d+)%.?(%d*)$")
-	local result = parseInteger(integerString:byte(1, integerString:len())) + parseInteger(decimalString:byte(1, decimalString:len())) / 10 ^ decimalString:len()
+	local result = parseInteger(integerString:byte(1, integerString:len())) +
+		parseInteger(decimalString:byte(1, decimalString:len())) / 10 ^ decimalString:len()
 	if (sign == "-") then
 		result = -result
 	end
@@ -125,6 +127,7 @@ function table:length()
 	end
 	return count
 end
+
 --#endregion
 
 --#region Actions
@@ -135,8 +138,8 @@ Action = {
 		---Print message to GHUB script console
 		---@vararg any @messages to be printed
 		---@return function
-		Print = function(self,...)
-			local args = {...}
+		Print = function(self, ...)
+			local args = { ... }
 			return function()
 				local content = ""
 				for _, value in ipairs(args) do
@@ -157,7 +160,7 @@ Action = {
 		---Press buttons and keys in a sequence
 		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
-		Press = function (self, keysAndButtons)
+		Press = function(self, keysAndButtons)
 			return function()
 				for index, value in ipairs(keysAndButtons) do
 					if type(value) == "string" then
@@ -175,7 +178,7 @@ Action = {
 		---Release buttons and keys in a sequence
 		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
-		Release = function (self, keysAndButtons)
+		Release = function(self, keysAndButtons)
 			return function()
 				for index, value in ipairs(keysAndButtons) do
 					if type(value) == "string" then
@@ -242,7 +245,7 @@ Action = {
 							end
 						end
 					end
-					for i = #target, 1,-1 do
+					for i = #target, 1, -1 do
 						local value = target[i]
 						if type(value) == "number" then
 							ReleaseMouseButton(value)
@@ -270,6 +273,7 @@ Action = {
 					end
 				end
 			end
+
 			return function()
 				ClickRecursively(keysAndButtons, 1)
 			end
@@ -306,9 +310,11 @@ Action = {
 			return function()
 				local curx, cury = GetMousePosition()
 				if (self.MultiMonitor) then
-					MoveMouseToVirtual(curx + math.floor(x * 65535 / self.Resolution.Width), cury + math.floor(y * 65535 / self.Resolution.Height))
+					MoveMouseToVirtual(curx + math.floor(x * 65535 / self.Resolution.Width),
+						cury + math.floor(y * 65535 / self.Resolution.Height))
 				else
-					MoveMouseTo(curx + math.floor(x * 65535 / self.Resolution.Width), cury + math.floor(y * 65535 / self.Resolution.Height))
+					MoveMouseTo(curx + math.floor(x * 65535 / self.Resolution.Width),
+						cury + math.floor(y * 65535 / self.Resolution.Height))
 				end
 			end
 		end,
@@ -383,7 +389,7 @@ end
 local function NextPermutation(list)
 	local length = #list
 	local k, l = 0, 0
-	for i = length - 1, 1,-1 do
+	for i = length - 1, 1, -1 do
 		if list[i] < list[i + 1] then
 			k = i
 			break
@@ -392,7 +398,7 @@ local function NextPermutation(list)
 	if k == 0 then
 		return false
 	end
-	for i = length, k + 1,-1 do
+	for i = length, k + 1, -1 do
 		if list[k] < list[i] then
 			l = i
 			break
@@ -438,16 +444,16 @@ KeyCombination = {
 				unorderedGroups = nil
 			end
 			if unorderedGroups then
-				local indexTable = { }
-				for i = 1,#sequence do
+				local indexTable = {}
+				for i = 1, #sequence do
 					indexTable[sequence[i]] = i
 				end
-				for i = 1,#unorderedGroups do
-					for j = 1,#unorderedGroups[i] do
+				for i = 1, #unorderedGroups do
+					for j = 1, #unorderedGroups[i] do
 						unorderedGroups[i][j] = indexTable[unorderedGroups[i][j]]
 					end
 				end
-				for i = 1,#unorderedGroups do
+				for i = 1, #unorderedGroups do
 					table.sort(unorderedGroups[i])
 				end
 				unorderedGroupsIndex = table.copy(unorderedGroups)
@@ -466,14 +472,14 @@ KeyCombination = {
 					--Check whether current event is a leaf event
 					local isLeaf = true
 					for name in pairs(self.List) do
-						if name:sub(1,#identifier) == identifier then
+						if name:sub(1, #identifier) == identifier then
 							isLeaf = false
 							break
 						end
 					end
 					--Update prefixs if being a leaf event
 					if isLeaf then
-						for i = 1,#identifier - 1 do
+						for i = 1, #identifier - 1 do
 							local prefix = identifier:sub(1, i)
 							if self.List[prefix] then
 								self.List[prefix].IsLeaf = false
@@ -487,7 +493,7 @@ KeyCombination = {
 					break
 				end
 				local finished = true
-				for i=#unorderedGroups, 1,-1 do
+				for i = #unorderedGroups, 1, -1 do
 					if NextPermutation(unorderedGroups[i]) then
 						finished = false
 						break
@@ -499,8 +505,8 @@ KeyCombination = {
 					break
 				end
 				local identifierTable = table.copy(initialTable)
-				for i = 1,#unorderedGroups do
-					for j = 1,#unorderedGroups[i] do
+				for i = 1, #unorderedGroups do
+					for j = 1, #unorderedGroups[i] do
 						identifierTable[unorderedGroupsIndex[i][j]] = initialTable[unorderedGroups[i][j]]
 					end
 				end
@@ -590,7 +596,7 @@ KeyCombination = {
 				sequence = { sequence }
 			end
 			local reversedDstCombination = {}
-			for i = 1,#sequence do
+			for i = 1, #sequence do
 				reversedDstCombination[i] = sequence[#sequence - i + 1]
 			end
 
@@ -699,7 +705,7 @@ KeyCombination = {
 	ReleaseButton = function(self, button)
 		for i = 1, #self.CustomHandlers do
 			if self.CustomHandlers[i].TriggerTime == "pre" then
-				self.CustomHandlers[i]:Handle("release",button, self.PressedButtons)
+				self.CustomHandlers[i]:Handle("release", button, self.PressedButtons)
 			end
 		end
 		local btn = EncodeButton(button)
@@ -732,7 +738,7 @@ KeyCombination = {
 		end
 		for i = 1, #self.CustomHandlers do
 			if self.CustomHandlers[i].TriggerTime == "post" then
-				self.CustomHandlers[i]:Handle("release",button, self.PressedButtons)
+				self.CustomHandlers[i]:Handle("release", button, self.PressedButtons)
 			end
 		end
 	end
@@ -743,14 +749,14 @@ KeyCombination = {
 ---@type fun()[]
 ActivationHandlers = {
 	Add = function(self, handler)
-		self[#self+1] = handler
+		self[#self + 1] = handler
 	end
 }
 
 ---@type fun()[]
 DeactivationHandlers = {
 	Add = function(self, handler)
-		self[#self+1] = handler
+		self[#self + 1] = handler
 	end
 }
 --#endregion
