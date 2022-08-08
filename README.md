@@ -38,8 +38,20 @@
   2. #### ***Button***
       The collection of mouse buttons. In GHUB API, mouse buttons are identified by an integer, which is hard to remember. This collection gives each button a meaningful name, making it easier to register.
   3. #### ***Settings***  
-      *Settings.ScreenResolution* defines the current resolution of your screen. Only affect Action.Cursor.  
-	    *Settings.MouseModel* define the model of your mouse. It determines the collection of buttons, in other words, the *Button* variable. Currently only "G502Hero" is supported, because that's the only model I have. I'll provide an easy way for users to configure their own model in the future and add some more common models.
+      Generally, there are 2 settings fields uesrs should care about.  
+      - **Mouse model**  
+        Mouse buttons varies for different Logitech mouses. In GHUB's Lua framework, mouse buttons are identified by unique integers, making registration unhandy. For convinience, I defined those integers with user-friendly names for some mouse models I have access to, or to say *G502Hero* and *G604LightSpeed* currently speaking.
+        If you happened to use one of the models I've provided, simply set the model by changing the right operand of statement `Button = MouseModel.G604LightSpeed`; if not, don't worry, I'll provide a way to create your own model preset in the future.
+      - **Screen resolution**  
+        You may ignore this part if your actions wouldn't involve mouse cursor.  
+        Set your screen resolution in the following statement to make cursor related actions work properly.
+        ```lua
+        Action.Cursor.Resolution = {
+          Width = 1920,
+          Height = 1080
+        }
+        ```
+        Go to **Settings > System > Screen > Monitor resolution** to get your scrren resolution, in case you have no idea how.
   4. #### ***Event***
       The base table used to register events. Users only need to use it in the following sentence  
 	    ```lua
