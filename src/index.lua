@@ -809,7 +809,7 @@ Mouse = {
 
 ---Collection of mouse button code mappings of common Logitech mouse models
 ---@type table<string,table<string,number>>
-local MouseModel = {
+MouseModel = {
 	G502Hero = {
 		Primary = 1,
 		Secondary = 2,
@@ -845,14 +845,18 @@ local MouseModel = {
 --#endregion
 
 --#region Configurations
-Settings = {
-	ScreenResolution = { 1920, 1080 },
-	MouseModel = "G502Hero"
-}
+
+--Set your scrren resolution here
 Action.Cursor.Resolution = {
-	Width = Settings.ScreenResolution[1],
-	Height = Settings.ScreenResolution[2]
+	Width = 1920,
+	Height = 1080
 }
-Button = MouseModel[Settings.MouseModel]
-Event = KeyCombination.Event
+--Set your mouse model here
+Button = MouseModel.G604LightSpeed
+
 --#endregion
+
+Event = KeyCombination.Event
+--Register key combinations below
+Event:RegisterBind(Button.Primary, Mouse.PrimaryClick)
+Event:RegisterBind(Button.Secondary, Mouse.SecondaryClick)
