@@ -14,14 +14,14 @@
   7. Enjoy your enhanced mouse
   + Note that if your combination involves primary key and thus you disable it in the new profile, make sure you have alternative way, like using touchpad, to perform a primary click. Otherwise it's very likely that you lost control of your computer, since most users are not familiar with pure keyboard control.
 + ### **How to test or debug my assignment :question:**
-  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to terrible consequence, it's recommended to test the framework using the [simulator](src/debug/simulator.lua) if you are familiar with lua.  
+  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But in case some inappropriate assignment might lead to severe consequence, it's recommended to test the framework using the [simulator](src/debug/simulator.lua) if you are familiar with lua.  
   Refer to an [example](src/example/console-debug.lua) for usage. It's recommended to write test operations in [operations.txt](src/example/operations.txt), reading from file makes it possible to use debugger.
 ## **:star2:Documentation:star2:**
 + ### **Terms** :microscope:
   1. ***Physical and functional mouse button***: Physical mouse buttons are the ones on your mouse, you can press them with your hands, and functional mouse buttons are the default action allocated to major mouse buttons by the operating system. For example, your primary button are default binded to primary click action. So in short, physical mouse buttons are real buttons, and functional mouse buttons are actions in the system. We distinguish the concepts here because in GHUB, you're fully able to change the default action of the major buttons like assign primary click to secondary button and secondary click to primary button.  
   2. ***Pressed and released event:*** One combination could trigger two event, pressed and released. When **all** physical buttons in the combination are pressed in order, pressed event fires. Then when **any** pressed buttons are released, released event is triggered.  
   3. ***Leaf combination:*** A leaf combination is one that no other registered combinations hold it as prefix. For example, if you have following combinations in your registry (each numeric character represent a mouse button), **["1", "12", "23", "123"]**, "1" and "12" are not leaf combinations, because "1" is the prefix of "12" and "123", and "12" is the prefix of "123".  
-  4. ***Parallel and nested click:*** A significant concept in released-only events. Given a key sequence **{"a", "b"}**, if doing an parallel click, the framework will **press "a", release "a", press "b", and release "b"**; If using nested mode, the framework will **press "a", press "b", release "b", and release "a"**.
+  4. ***Sequential and nested click:*** A significant concept in released-only events. Given a key sequence **{"a", "b"}**, if doing an sequential click, the framework will **press "a", release "a", press "b", and release "b"**; If using nested mode, the framework will **press "a", press "b", release "b", and release "a"**.
 + ### **Standard** :book:
   Due to the principle of the framework, user should follow the standard below to avoid unexpected behavior in advance.  
   1. ***No duplicate buttons in combination*** :x:  
@@ -108,7 +108,7 @@
       **Functionality:** This method registers an released-only event, which means nothing happens at pressed event. The *sequence* will be executed when released event is triggered. Since no pressed event involved, the two different click modes are involved here.    
         
       ***combination:*** Same as above.  
-      ***sequence:*** The sequence of functional mouse buttons and keyboard keys. To distinguish parallel and nested modes, we introduce table level here. The first level are treated nestedly, second parallelly, third nestedly again, and so on. Details will be shown in the examples in the end.  
+      ***sequence:*** The sequence of functional mouse buttons and keyboard keys. To distinguish sequential and nested modes, we introduce table level here. The first level are treated nestedly, second sequentially, third nestedly again, and so on. Details will be shown in the examples in the end.  
       ***unorderedGroups:*** Same as above.  
         
       ***Examples:***  
@@ -118,7 +118,7 @@
         { SideFront },
         { "a", "b" }
       )
-      --"a" and "b" will be clicked parallelly
+      --"a" and "b" will be clicked sequentially
       Event:RegisterReleasedBind(
         { SideMiddle },
         { { "a", "b" } }
