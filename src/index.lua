@@ -3,11 +3,13 @@
 --#region Class Definations
 
 ---@alias numstr number|string
----@alias Keyboard "'escape'"|"'f1'"|"'f1'" |"'f2'" |"'f3'" |"'f4'" |"'f5'" |"'f6'" |"'f7'" |"'f8'" |"'f9'" |"'f10'" |"'f11'" |"'f12'" |"'f13'" |"'f14'" |"'f15'" |"'f16'" |"'f17'" |"'f18'" |"'f19'" |"'f20'" |"'f21'" |"'f22'" |"'f23'" |"'f24'"|"'printscreen'" |"'scrolllock'" |"'pause'" |"'tilde'" |"'1'" |"'2'" |"'3'" |"'4'" |"'5'" |"'6'" |"'7'" |"'8'" |"'9'" |"'0'" |"'minus'" |"'equal'" |"'backspace'" |"'tab'" |"'q'" |"'w'" |"'e'" |"'r'" |"'t'" |"'y'" |"'u'" |"'i'" |"'o'" |"'p'" |"'lbracket'" |"'rbracket'" |"'backslash'" |"'capslock'" |"'a'" |"'s'" |"'d'" |"'f'" |"'g'" |"'h'" |"'j'" |"'k'" |"'l'" |"'semicolon'" |"'quote'" |"'enter'" |"'lshift'" |"'non_us_slash'" |"'z'" |"'x'" |"'c'" |"'v'" |"'b'" |"'n'" |"'m'" |"'comma'" |"'period'" |"'slash'" |"'rshift'" |"'lctrl'" |"'lgui'" |"'lalt'" |"'spacebar'" |"'ralt'" |"'rgui'" |"'appkey'" |"'rctrl'" |"'insert'" |"'home'" |"'pageup'" |"'delete'" |"'end'" |"'pagedown'" |"'up'" |"'left'" |"'down'" |"'right'" |"'numlock'" |"'numslash'" |"'numminus'" |"'num7'" |"'num8'" |"'num9'" |"'numplus'" |"'num4'" |"'num5'" |"'num6'" |"'num1'" |"'num2'" |"'num3'" |"'numenter'" |"'num0'" |"'numperiod'"
+---@alias Keyboard "escape"|"f1"|"f1"|"f2"|"f3"|"f4"|"f5"|"f6"|"f7"|"f8"|"f9"|"f10"|"f11"|"f12"|"f13"|"f14"|"f15"|"f16"|"f17"|"f18"|"f19"|"f20"|"f21"|"f22"|"f23"|"f24"|"printscreen"|"scrolllock"|"pause"|"tilde"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"|"0"|"minus"|"equal"|"backspace"|"tab"|"q"|"w"|"e"|"r"|"t"|"y"|"u"|"i"|"o"|"p"|"lbracket"|"rbracket"|"backslash"|"capslock"|"a"|"s"|"d"|"f"|"g"|"h"|"j"|"k"|"l"|"semicolon"|"quote"|"enter"|"lshift"|"non_us_slash"|"z"|"x"|"c"|"v"|"b"|"n"|"m"|"comma"|"period"|"slash"|"rshift"|"lctrl"|"lgui"|"lalt"|"spacebar"|"ralt"|"rgui"|"appkey"|"rctrl"|"insert"|"home"|"pageup"|"delete"|"end"|"pagedown"|"up"|"left"|"down"|"right"|"numlock"|"numslash"|"numminus"|"num7"|"num8"|"num9"|"numplus"|"num4"|"num5"|"num6"|"num1"|"num2"|"num3"|"numenter"|"num0"|"numperiod"
+---@alias Delay "#10"|"#15"|"#25"|"#50"|"#100"|"#200"|"#500"|"#1000"
 ---@alias MouseKeyboard integer|Keyboard
----@alias Handler fun(self:ConfiguredHandler, event:"'press'"|"'release", button:integer, pressedButtons:integer[])
+---@alias ActionSequence (MouseKeyboard|Delay|ActionSequence)[]
+---@alias Handler fun(self:ConfiguredHandler, event:"press"|"release", button:integer, pressedButtons:integer[])
 
----@class char:string @string whose length is 1
+---@alias char string @string whose length is 1
 
 ---@class EventAction
 ---@field Pressed fun() @Function to be called when key combination is pressed
@@ -18,7 +20,7 @@
 ---@field IsLeaf boolean @Indicate whether this event is a leaf event
 
 ---@class ConfiguredHandler
----@field TriggerTime "'pre'"|"'post"
+---@field TriggerTime "pre"|"post"
 ---@field Handle Handler
 ---@field Instrument any @Contains instrumental variable
 
@@ -158,7 +160,7 @@ Action = {
 	},
 	KeysAndButtons = {
 		---Press buttons and keys in a sequence
-		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons (MouseKeyboard|Delay)[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
 		Press = function(self, keysAndButtons)
 			return function()
@@ -176,7 +178,7 @@ Action = {
 			end
 		end,
 		---Release buttons and keys in a sequence
-		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons (MouseKeyboard|Delay)[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
 		Release = function(self, keysAndButtons)
 			return function()
@@ -194,7 +196,7 @@ Action = {
 			end
 		end,
 		---Press or release buttons and keys in a sequence
-		---@param keysAndButtons MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
+		---@param keysAndButtons (MouseKeyboard|Delay)[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
 		---@return function
 		PressAndRelease = function(self, keysAndButtons)
 			return function()
@@ -227,7 +229,7 @@ Action = {
 			end
 		end,
 		---Click buttons and keys sequentially or nestedly
-		---@param keysAndButtons any[] @Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
+		---@param keysAndButtons ActionSequence @Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
 		---@return function
 		Click = function(self, keysAndButtons)
 			local function ClickRecursively(target, depth)
@@ -325,9 +327,11 @@ Action = {
 		MoveTo = function(self, x, y)
 			return function()
 				if (self.MultiMonitor) then
-					MoveMouseToVirtual(math.floor(x * 65535 / self.Resolution.Width), math.floor(y * 65535 / self.Resolution.Height))
+					MoveMouseToVirtual(math.floor(x * 65535 / self.Resolution.Width),
+						math.floor(y * 65535 / self.Resolution.Height))
 				else
-					MoveMouseTo(math.floor(x * 65535 / self.Resolution.Width), math.floor(y * 65535 / self.Resolution.Height))
+					MoveMouseTo(math.floor(x * 65535 / self.Resolution.Width),
+						math.floor(y * 65535 / self.Resolution.Height))
 				end
 			end
 		end,
@@ -429,7 +433,7 @@ KeyCombination = {
 		---Register an event
 		---@param sequence integer[] @Sequence of mouse buttons
 		---@param action EventAction @Action to be performed when the event fires
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		Register = function(self, sequence, action, unorderedGroups)
 			local unorderedGroupsIndex
 			if unorderedGroups == "all" then
@@ -520,7 +524,7 @@ KeyCombination = {
 		---Register an event firing when pressed
 		---@param combination integer|integer[] @Sequence of mouse buttons
 		---@param action fun()|fun()[] @An action or a list of actions to be performed when the event fires
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		RegisterPressed = function(self, combination, action, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -541,7 +545,7 @@ KeyCombination = {
 		---Register an event firing when released
 		---@param combination integer|integer[] @Sequence of mouse buttons
 		---@param action fun()|fun()[] @An action or a list of actions to be performed when the event fires
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		RegisterReleased = function(self, combination, action, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -563,7 +567,7 @@ KeyCombination = {
 		---@param combination integer|integer[] @Sequence of mouse buttons
 		---@param pAction fun()|fun()[] @An action or a list of actions to be performed on pressed
 		---@param rAction fun()|fun()[] @An action or a list of actions to be performed on released
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		RegisterPressedAndReleased = function(self, combination, pAction, rAction, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -586,8 +590,8 @@ KeyCombination = {
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
 		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param sequence MouseKeyboard|MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param sequence MouseKeyboard|ActionSequence @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		RegisterBind = function(self, combination, sequence, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -608,8 +612,8 @@ KeyCombination = {
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
 		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param sequence MouseKeyboard|MouseKeyboard[] @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param sequence MouseKeyboard|ActionSequence @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		RegisterReleasedBind = function(self, combination, sequence, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -625,7 +629,7 @@ KeyCombination = {
 		---Register a macro playing action to released event
 		---@param combination integer|integer[] @Mouse buttons combinations
 		---@param macroName string @Name of the macro
-		---@param unorderedGroups? integer[]|integer[][]|"'all'" @Order of the buttons within the table will be ignored.
+		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
 		RegisterReleasedMacro = function(self, combination, macroName, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
