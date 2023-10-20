@@ -1,80 +1,102 @@
 # **:sparkles:Key Combination Framework for Logitech GHUB:sparkles:**
 ## **:star2:Introduction:star2:**
-+ ### **What is it :question:**
-  It is a lua script that builds a framework for Logitech GHUB, providing more flexible key combination events than G-Shift.
-+ ### **What's it used for :question:**
-  Extend the functionality of Logitech mice. With this framework, users can easily assign keyboard or macro mappings to all kinds of mouse button combinations. The number of keys isn't the limit, as long as your fingers could reach them at the same time :grin:.
-+ ### **How to use it :question:**
-  1. Clone this repository, or simply download **[index.lua](src/index.lua)**.  
-  2. Append a few lua code to register events and add custom handlers.
-  3. Open GHUB and add a new profile for your target application.
-  4. Enter the new profile, switch to "Assignments" tab and disable the buttons that you'll register in the script. It is recommended to disable all the buttons in case of conflicts.
-  5. Create a new script through GHUB.
-  6. Copy and paste the framework with your own code into the GHUB script editor and save it.
-  7. Enjoy your enhanced mouse.
-  + Note that if your combination involves primary key and thus you disable it in the new profile, make sure you have alternative way, like using touchpad, to perform a primary click. Otherwise it's very likely that you lost control of your computer, since most users are not familiar with pure keyboard control.
-+ ### **How to test or debug my assignment :question:**
-  Obviously, the simplest way is to activate your script in a profile and operate your mouse. But considering some inappropriate assignment might lead to severe consequence, it's recommended to test the framework using the [simulator](src/debug/simulator.lua) if you are familiar with lua.  
-  Refer to an [example](src/example/console-debug.lua) for usage. It's also recommended to write test operations in [operations.txt](src/example/operations.txt), reading from file makes it possible to use debugger.
++ ### **What Is This Framework:question:**
+  This is a Lua script that constructs a comprehensive framework for Logitech GHUB, offering advanced key combination functionality that goes beyond what G-Shift can provide.
+
++ ### **What Purpose Does It Serve:question:**
+  The primary goal of this framework is to enhance the capabilities of Logitech mice. With it, users can easily assign keyboard shortcuts and macros to various combinations of mouse buttons. There's virtually no limit to the number of keys you can assign, as long as your fingers can cooperate :grin:.
+
++ ### **How to Utilize This Framework:question:**
+  1. Start by cloning this repository or opt for the express route by downloading **[index.lua](src/index.lua)**.
+  2. Write some Lua code to register events and define your own custom actions.
+  3. Launch GHUB, create a new profile dedicated to your target application.
+  4. Access the new profile, navigate to the "Assignments" tab, and disable the buttons you intend to command through the script. It's a wise precaution to disable all buttons to prevent conflicts.
+  5. Create a new script within GHUB.
+  6. Simply copy and paste the framework along with your custom code into the GHUB script editor and save your configuration.
+  7. Now, revel in the expanded capabilities of your mouse.
+
+  + Should your chosen combination involve the primary mouse button, and you've chosen to disable it within the new profile, ensure you have an alternative means, such as a trusty touchpad, to execute a primary click. This precautionary step can prevent unintended computer sorcery since most users aren't versed in the arcane art of pure keyboard control.
+
++ ### **How to Test or Debug Your Configurations:question:**
+  The most straightforward method is to activate your script within a profile and observe the actions of your mouse. However, due to the potential impact of improper configurations, we recommend testing the framework using the [simulator](src/debug/simulator.lua) if you possess expertise in Lua. For further guidance, refer to an [example](src/example/console-debug.lua). To add a touch of precision to your tests, consider documenting your operations in [operations.txt](src/example/operations.txt). This not only enhances your debugging prowess but also adds an air of scholarly meticulousness to your work.
+
 ## **:star2:Documentation:star2:**
-+ ### **Terms** :microscope:
-  1. ***Physical and functional mouse button***: Physical mouse buttons are the ones on your mouse, you can press them with your hands, and functional mouse buttons are the default action allocated to major mouse buttons by the operating system. For example, your primary button are default bind to primary click action. So in short, physical mouse buttons are real buttons, and functional mouse buttons are actions in the system. We distinguish the concepts here because in GHUB, you're fully able to change the default action of the major buttons like assign primary click to secondary button and secondary click to primary button.  
-  2. ***Pressed and released event:*** One combination could trigger two event, pressed and released. When **all** physical buttons in the combination are pressed in order, pressed event fires. Then when **any** pressed buttons are released, released event is triggered.  
-  3. ***Leaf combination:*** A leaf combination is one that no other registered combinations hold it as prefix. For example, if you have following combinations in your registry (each numeric character represent a mouse button), **["1", "12", "23", "123"]**, "1" and "12" are not leaf combinations, because "1" is the prefix of "12" and "123", and "12" is the prefix of "123".  
-  4. ***Sequential and nested click:*** A significant concept in released-only events. Given a key sequence **{"a", "b"}**, if doing an sequential click, the framework will **press "a", release "a", press "b", and release "b"**; If using nested mode, the framework will **press "a", press "b", release "b", and release "a"**.
-+ ### **Standard** :book:
-  Due to the principle of the framework, users should follow the standard below to avoid unexpected behavior in advance.  
-  1. ***No duplicate buttons in combination*** :x:  
-    Obviously, you cannot press a pressed button, thus such event will never be triggered in real application.
-  2. ***Don't register a combination more than once*** :x:  
-    If one combination is registered multiple times, only the latest assignment will be on effect.
-  3. ***Try to avoid registering pressed event for non-leaf combination*** :heavy_exclamation_mark:  
-    Non-leaf combinations are possible to have a pressed event, however, since the framework cannot predict whether more buttons will be pressed when the registered combination is pressed, the pressed event will always fire even if you're actually performing a combination that prefix this combination.
-  4. ***Register only the released event if possible*** :heavy_check_mark:  
-    It could be supposed from above that released-only events offers more flexibility, thus if pressing action is not in demand, it's always preferable to use released-only events.
++ ### **Glossary** :microscope:
+  1. ***Physical and Functional Mouse Buttons***: The physical mouse buttons are the tangible, click-worthy components of your mouse. You can give them the royal treatment with your fingertips. Functional mouse buttons, on the other hand, are the predefined actions assigned to these physical buttons by your operating system. For instance, your primary button defaults to a primary click action. In summary, physical mouse buttons are the real deal, while functional mouse buttons are like the puppeteers behind the scenes. We differentiate between these concepts because in GHUB, you have the power to change the default actions of the major buttons, like making the primary button perform a secondary click and vice versa.
+
+  2. ***Pressed and Released Events***: A single combination can cast two distinct spells: pressed and released events. The pressed event is summoned when **ALL** the physical buttons in the combination are pressed in order. When **ANY** of the pressed buttons are released, the released event is triggered.
+
+  3. ***Leaf Combination***: A leaf combination is one that stands alone, with no other registered combinations preceding it. For example, if your registry holds these combinations (each numeric character representing a mouse button): `["1", "12", "23", "123"]`, `"1"` and `"12"` aren't considered leaf combinations because `"1"` is the prefix of `"12"` and `"123"`, and `"12"` is the prefix of `"123"`. It's a bit like a family tree where some branches are more distant cousins.
+
+  4. ***Sequential and Nested Click***: Here's the scoop on released-only events. When you have a key sequence like `{"a", "b"}`, in sequential mode, the framework will execute a sequence like **press "a", release "a", press "b", and release "b".** In nested mode, it's a bit like Russian nesting dolls: **press "a", press "b", release "b", and release "a".**
+
++ ### **Best Practices** :book:
+  To keep your spellbook clean and avoid unexpected hiccups, it's wise to adhere to the following standards:
+
+  1. ***No Duplicate Buttons in Combination*** :x:  
+    Obviously, you can't press a button that's already being pressed - it's like trying to high-five yourself. So, such events are a no-go in the realm of real applications.
+
+  2. ***Avoid Registering the Same Combination Multiple Times*** :x:  
+    If you're caught in a time loop and register a combination multiple times, only the latest incantation will take effect. The others shall remain in the mists of history.
+
+  3. ***Exercise Caution with Pressed Events for Non-Leaf Combinations*** :heavy_exclamation_mark:  
+    Non-leaf combinations can potentially have pressed events, but beware. Since the framework can't predict if more buttons will join the party when the registered combination is pressed, the pressed event will always ignite, even if you're merely performing a combination that serves as its precursor.
+
+  4. ***Prefer Registering Released-Only Events When Possible*** :heavy_check_mark:  
+    As hinted earlier, released-only events are the agile acrobats of the framework. If you don't require the initial button press, they offer more flexibility. So, if you can do without the "press", it's always wiser to go for the "release-only" option.
+
 + ### **Globals** :globe_with_meridians:
-  1. #### ***Action***
-      A collection of all actions provided by G-series Lua API. The introduction of each action is written as comments, and their function could be easily guessed by its name. Since in most cases users just need to use the wrapped register methods, there's no need to put detailed documentation on this table.
-  2. #### ***Button***
-      The collection of mouse buttons. In GHUB API, mouse buttons are identified by an integer, which is hard to remember. This collection gives each button a meaningful name, making it easier to register.
+  1. #### ***Action***  
+      This is a treasure trove of actions bestowed upon us by the G-series Lua API. Each action comes with its own introduction, conveniently written as comments, and their functions are usually self-evident from their names. In most cases, users can employ the provided register methods without delving into the nitty-gritty details.
+
+  2. #### ***Button***  
+      Behold, the esteemed collection of mouse buttons. In the intricate GHUB API, mouse buttons are assigned cryptic integers, making them hard to remember. Here, each button is graced with a name that carries meaning, making registration a breeze. It's like giving your mouse buttons name tags at a party - they become far easier to recognize.
+
   3. #### ***Settings***  
-      Generally, there are 2 settings fields uesrs should care about.  
-      - **Mouse model**  
-        Mouse buttons varies for different Logitech mouses. In GHUB's Lua framework, mouse buttons are identified by unique integers, making registration unhandy. For convinience, I defined those integers with user-friendly names for some mouse models I have access to, or to say *G502Hero* and *G604LightSpeed* currently speaking.
-        If you happened to use one of the models I've provided, simply set the model by changing the right operand of statement `Button = MouseModel.G604LightSpeed`; if not, don't worry, I'll provide a way to create your own model preset in the future.
-      - **Screen resolution**  
-        You may ignore this part if your actions wouldn't involve mouse cursor.  
-        Set your screen resolution in the following statement to make cursor related actions work properly.
+      Within this domain, there are two paramount settings that command your attention:
+
+      - **Mouse Model**
+        Mouse buttons vary across the realm of Logitech mouses. In the labyrinth of GHUB's Lua framework, these buttons are represented by unique integers, a cumbersome practice. To simplify matters, I've generously provided friendly names for some mouse models I have encountered, such as the *G502Hero* and *G604LightSpeed*. If you happen to wield one of these models, a simple adjustment of the right operand in the statement `Button = MouseModel.G604LightSpeed` will suffice. If not, fret not, for I shall reveal a method to craft your own model presets in the future.
+
+      - **Screen Resolution**
+        Unless your conjured actions involve the movement of the mouse cursor, this aspect may be safely ignored. To ensure that cursor-related spells work their magic, set your screen resolution as follows:
         ```lua
         Action.Cursor.Resolution = {
           Width = 1920,
           Height = 1080
         }
         ```
-        Go to **Settings > System > Screen > Monitor resolution** to get your scrren resolution, in case you have no idea how.
+        Journey to **Settings > System > Screen > Monitor Resolution** to unveil the secrets of your screen's dimensions, in case such knowledge eludes you.
+
   4. #### ***Event***
-      The base table used to register events. Users only need to use it in the following sentence  
-	    ```lua
-	    Event:SomeRegisteringMethod(parameters...)
-	    ```  
-	    Notice that you must use **":"**, the **colon**, instead of **"."**, the **period**, to call registering methods. Refer to lua documentation if curious about the differences.
+      This is the foundational table employed to inscribe events into the annals of your mouse's existence. Users need only invoke it as follows:
+      ```lua
+      Event:SomeRegisteringMethod(parameters...)
+      ```
+      Do take note, it's crucial to employ `:`, the colon, rather than the `.`, the period, when invoking the registering methods. You might find the nuances intriguing; delve into Lua's esoteric texts if you yearn for more wisdom.
+
   5. #### ***Mouse***
-      A collection of mouse functions like primary click and secondary click. Same as *Button*, it's just help you to memorize.
+      Just as a compendium aids your memory, this is a compendium of mouse functions such as the primary click and secondary click. Much like training wheels for beginners, it's here to help you remember the basics.
+
   6. #### ***KeyCombination***
-      The core table of the framework. But for users, it's just used for adding custom handlers. It's only for few special behaviors beyond the basic framework, which won't be in need in most cases.   
-	    Refer to [example](src/example/console-debug.lua) for implementation details.
+      This is the heart and soul of the framework, a sanctuary for custom handlers. For most users, it's like the hidden treasure chest beyond the known map, reserved for special behaviors that venture beyond the usual. In most cases, it remains untouched, serving as a secret vault that only a select few dare to explore. You'll find more insights into its secrets in the [example](src/example/console-debug.lua).
+
 + ### **Registration** :pencil:
-  In most cases, all the code you need to write yourself is registering. Here's some most commonly used methods.  
+  In most cases, your journey will primarily revolve around registrations. Here are some of the commonly used methods:
+
   1. #### ***RegisterBind***
       ```lua
       Event:RegisterBind(combination, sequence, unorderedGroups?)
       ```
-      **Functionality:** When *pressed event* fires, the **functional** mouse buttons and keyboard keys bind will be pressed sequentially; accordingly, the related buttons and keys will be released in a reversed sequence when *released event* fires.  
-        
-      ***`combination`:*** The sequence of physical mouse buttons to press, or mouse button combination, in short.  
-      ***`sequence`:*** The sequence of functional mouse buttons and keyboard keys bind to the combination of physical mouse buttons above.  
-      ***`unorderedGroups`:*** By default, *combination* is sequential. For example, if you register 12 and press mouse button 2 earlier than 1, which build the sequence 12, the registered actions won't be called. If the order of some buttons in the combination doesn't matter, this parameter is what you need. If the whole combination should be unordered, assign string "all" to this parameter; If it's just a part of the combination, list them here as a table; If multiple parts are unordered separately, list all parts and wrap them as a table here. The folloing examples will better illustrate it.  
-        
+
+      **Functionality:** When the *pressed event* occurs, this method sequentially presses the specified **functional** mouse buttons and keyboard keys corresponding to the physical mouse buttons in the combination. The related buttons and keys are released in a reversed sequence when the *released event* is triggered.
+
+      ***`combination`:*** Refers to the sequence of physical mouse buttons to be pressed, or, in short, the mouse button combination.
+
+      ***`sequence`:*** This indicates the sequence of functional mouse buttons and keyboard keys that are bound to the combination of physical mouse buttons.
+
+      ***`unorderedGroups`:*** By default, the *combination* is expected to be sequential. For example, if you register `"12"` but press mouse button 2 before 1, thereby forming the sequence `"21"`, the registered actions won't be executed. If the order of some buttons in the combination doesn't matter, you can employ this parameter. If the entire combination should be considered unordered, assign the string `"all"` to this parameter. If only a portion of the combination should be unordered, list those portions as a table. If multiple sections of the combination are unordered separately, list all the parts and encapsulate them as a table. For a clearer understanding, refer to the examples provided below.
+
       ***Examples:***
       ```lua
       Event:RegisterBind(
@@ -91,7 +113,6 @@
         { "lctrl", Mouse.PrimaryClick},
         { Button.SideMiddle, Button.SideBack }
       )
-      --string starting with "#" means delay, unit: ms
       Event:RegisterBind(
         { Button.SideMiddle, Button.SideBack, Button.AuxiliaryFront, Button.AuxiliaryBack },
         { Mouse.SecondaryClick, "#100", "t" },
@@ -101,24 +122,28 @@
         }
       )
       ```
+
   2. #### ***RegisterReleasedBind***
       ```lua
       Event:RegisterReleasedBind(combination, sequence, unorderedGroups?)
       ```
-      **Functionality:** This method registers an released-only event, which means nothing happens at pressed event. The *sequence* will be executed when released event is triggered. Since no pressed event involved, the two different click modes are involved here.    
-        
-      ***`combination`:*** Same as above.  
-      ***`sequence`:*** The sequence of functional mouse buttons and keyboard keys. To distinguish sequential and nested modes, we introduce table level here. The first level are treated nestedly, second sequentially, third nestedly again, and so on. Details will be shown in the examples in the end.  
-      ***`unorderedGroups`:*** Same as above.  
-        
-      ***Examples:***  
+
+      **Functionality:** This method registers a released-only event, meaning no action is performed during the pressed event. The *sequence* will be executed when the released event is triggered. This method offers two different click modes.
+
+      ***`combination`:*** Same as previously described.
+
+      ***`sequence`:*** This denotes the sequence of functional mouse buttons and keyboard keys. To distinguish between sequential and nested modes, a table structure is introduced. The first level operates in a nested manner, the second operates sequentially, and so on. For detailed examples, please refer to the provided demonstrations.
+
+      ***`unorderedGroups`:*** Identical to the earlier explanation.
+
+      ***Examples:***
       ```lua
-      --"a" and "b" will be clicked nestedly
+      -- "a" and "b" will be clicked nestedly
       Event:RegisterReleasedBind(
         Button.SideFront,
         { "a", "b" }
       )
-      --"a" and "b" will be clicked sequentially
+      -- "a" and "b" will be clicked sequentially
       Event:RegisterReleasedBind(
         Button.SideMiddle,
         { { "a", "b" } }
@@ -138,12 +163,16 @@
         { "a", { "b", "c", { "d", "e" } }, "f" }
       )
       ```
+
   3. #### ***RegisterReleasedMacro***
       ```lua
       Event:RegisterReleasedMacro(combination,  macroName, unorderedGroups?)
       ```
-      ***Functionality:*** This is also a released-only registration method. The corresponding macro stored in GHUB will be played at released event.  
-        
-      ***`combination`:*** Same as above.  
-      ***`macroName`:*** The name of the macro to be played.  
-      ***`unorderedGroups`:*** Same as above.
+
+      ***Functionality:*** This is also a released-only registration method. It involves playing the corresponding macro stored in GHUB when the released event is triggered.
+
+      ***`combination`:*** Same as previously described.
+
+      ***`macroName`:*** This field requires the name of the macro to be executed.
+
+      ***`unorderedGroups`:*** Identical to the earlier explanation.
