@@ -823,7 +823,7 @@ MouseModel = {
 		SideFront = 6,
 		AuxiliaryBack = 7,
 		AuxiliaryFront = 8,
-		Back = 9,
+		Top = 9,
 		WheelRight = 10,
 		WheelLeft = 11,
 	},
@@ -841,6 +841,19 @@ MouseModel = {
 		AuxiliaryFront = 11,
 		WheelLeft = 12,
 		WheelRight = 13
+	},
+	G903Hero = {
+		Primary = 1,
+		Secondary = 2,
+		Middle = 3,
+		LeftSideBack = 4,
+		LeftSideFront = 5,
+		RightSideBack = 6,
+		RightSideFront = 7,
+		TopLeft = 8,
+		TopRight = 9,
+		WheelLeft = 10,
+		WheelRight = 11
 	}
 }
 
