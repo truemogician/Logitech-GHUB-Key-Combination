@@ -825,7 +825,20 @@ MouseModel = {
 		AuxiliaryFront = 8,
 		Top = 9,
 		WheelRight = 10,
-		WheelLeft = 11,
+		WheelLeft = 11
+	},
+	G502X = {
+		Primary = 1,
+		Secondary = 2,
+		Middle = 3,
+		SideBack = 4,
+		SideFront = 5,
+		SideMiddle = 6,
+		WheelLeft = 7,
+		WheelRight = 8,
+		Top = 9,
+		AuxiliaryFront = 10,
+		AuxiliaryBack = 11
 	},
 	G604LightSpeed = {
 		Primary = 1,
