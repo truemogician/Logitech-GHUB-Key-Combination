@@ -1,5 +1,5 @@
 function OutputLogMessage(message, ...)
-	print(message:sub(1, #message - 1), ...)
+	print(message:sub(1, #message - 1):format(...))
 end
 
 package.path = package.path .. ";?.lua"
@@ -32,6 +32,7 @@ Simulator = {
 			end
 			return true
 		end
+
 		if mode == "argument" then
 			for _, line in ipairs(param) do
 				print(line)
@@ -49,7 +50,7 @@ Simulator = {
 		else
 			local file
 			if mode == "file" then
-				file = io.open(param,"r")
+				file = io.open(param, "r")
 				io.input(file)
 			end
 			local onFile = self.FileMode

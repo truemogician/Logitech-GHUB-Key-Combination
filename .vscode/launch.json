@@ -1,14 +1,20 @@
 {
 	"configurations": [
 		{
+			"type": "lua",
+			"arg": [],
 			"name": "Test",
-			"type": "lua-local",
+			"program": "${workspaceFolder}/src/test/test.lua",
 			"request": "launch",
-			"program": {
-				"lua": "lua",
-				"file": "${workspaceFolder}/src/test/test.lua"
-			},
-			"cwd": "${workspaceFolder}"
+			"stopOnEntry": true
+		},
+		{
+			"type": "lua",
+			"arg": [],
+			"name": "Test: Current",
+			"program": "${file}",
+			"request": "launch",
+			"stopOnEntry": true
 		}
 	]
 }
