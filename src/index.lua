@@ -431,30 +431,89 @@ KeyCombination = {
 		Current = {},
 
 		---Register an event
-		---@param sequence integer[] @Sequence of mouse buttons
+		---@param combination integer[] @Sequence of mouse buttons
 		---@param action EventAction @Action to be performed when the event fires
 		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
-		Register = function(self, sequence, action, unorderedGroups)
-			local unorderedGroupsIndex
-			if unorderedGroups == "all" then
-				unorderedGroups = { table.copy(sequence) }
-			elseif type(unorderedGroups) == "table" then
-				if type(unorderedGroups[1]) == "number" then
-					unorderedGroups = { unorderedGroups }
-				elseif type(unorderedGroups[1]) ~= "table" then
-					unorderedGroups = nil
+		Register = function(self, combination, action, unorderedGroups)
+			for i = 1, #combination do
+				if type(combination[i]) ~= "number" then
+					OutputLogMessage("Invalid button in combination: %s\n", combination[i])
+					return
 				end
-			else
-				unorderedGroups = nil
 			end
+			--Get identifier
+			local initialTable = table.copy(combination)
+			local identifier = ""
+			local existence = {}
+			local duplication = false
+			for _, v in ipairs(combination) do
+				if existence[v] then
+					duplication = true
+				end
+				existence[v] = true
+				identifier = identifier .. EncodeButton(v)
+			end
+			function Warning(message, ...)
+				OutputLogMessage("[Combination: %s] " .. message .. "\n", identifier, ...)
+			end
+
+			if duplication then
+				Warning("Duplicate buttons in the same combination")
+			end
+			--Verify and unify unorderedGroups
+			if unorderedGroups ~= nil then
+				if unorderedGroups == "all" then
+					unorderedGroups = { table.copy(combination) }
+				elseif type(unorderedGroups) ~= "table" then
+					Warning("Invalid unorderedGroups type: %s", type(unorderedGroups))
+					unorderedGroups = nil
+				elseif #unorderedGroups == 0 then
+					unorderedGroups = nil
+				else
+					local firstType = type(unorderedGroups[1])
+					if firstType ~= "number" and firstType ~= "table" then
+						Warning("Invalid element type in unorderedGroups: %s", firstType)
+						unorderedGroups = nil
+					else
+						for _, v in ipairs(unorderedGroups) do
+							if type(v) ~= firstType then
+								Warning("Inconsistent element types in unorderedGroups")
+								unorderedGroups = nil
+								break
+							end
+						end
+						if firstType == "number" then
+							unorderedGroups = { unorderedGroups }
+						end
+					end
+				end
+			end
+			--Convert unorderedGroups to index table
+			---@type integer[][]
+			local unorderedGroupsIndex
 			if unorderedGroups then
 				local indexTable = {}
-				for i = 1, #sequence do
-					indexTable[sequence[i]] = i
+				for i = 1, #combination do
+					indexTable[combination[i]] = i
 				end
+				existence = {}
 				for i = 1, #unorderedGroups do
 					for j = 1, #unorderedGroups[i] do
-						unorderedGroups[i][j] = indexTable[unorderedGroups[i][j]]
+						local v = unorderedGroups[i][j]
+						if existence[v] then
+							Warning("Duplicate buttons in unorderedGroups: %d", v)
+							unorderedGroups = nil
+							break
+						end
+						if not indexTable[v] then
+							Warning("Button %d in unorderedGroups is not present in the sequence", v)
+							unorderedGroups = nil
+							break
+						end
+						unorderedGroups[i][j] = indexTable[v]
+					end
+					if unorderedGroups == nil then
+						break
 					end
 				end
 				for i = 1, #unorderedGroups do
@@ -462,15 +521,10 @@ KeyCombination = {
 				end
 				unorderedGroupsIndex = table.copy(unorderedGroups)
 			end
-			--Get identifier
-			local initialTable = table.copy(sequence)
-			local identifier = ""
-			for i, v in ipairs(sequence) do
-				identifier = identifier .. EncodeButton(v)
-			end
 			while true do
 				--Event already exists
 				if self.List[identifier] then
+					Warning("Combination already registered")
 					self.List[identifier].Action = action
 				else
 					--Check whether current event is a leaf event
@@ -515,7 +569,7 @@ KeyCombination = {
 					end
 				end
 				identifier = ""
-				for i, v in ipairs(identifierTable) do
+				for _, v in ipairs(identifierTable) do
 					identifier = identifier .. EncodeButton(v)
 				end
 			end
