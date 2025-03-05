@@ -1,12 +1,12 @@
 # **:sparkles:Key Combination Framework for Logitech GHUB:sparkles:**
 ## **:star2:Introduction:star2:**
-+ ### **What Is This Framework:question:**
++ ### **What Is This Framework**:question:
   This is a Lua script that constructs a comprehensive framework for Logitech GHUB, offering advanced key combination functionality that goes beyond what G-Shift can provide.
 
-+ ### **What Purpose Does It Serve:question:**
++ ### **What Purpose Does It Serve**:question:
   The primary goal of this framework is to enhance the capabilities of Logitech mice. With it, users can easily assign keyboard shortcuts and macros to various combinations of mouse buttons. There's virtually no limit to the number of keys you can assign, as long as your fingers can cooperate :grin:.
 
-+ ### **How to Utilize This Framework:question:**
++ ### **How to Utilize This Framework**:question:
   1. Start by cloning this repository or opt for the express route by downloading **[index.lua](src/index.lua)**.
   2. Write some Lua code to register events and define your own custom actions.
   3. Launch GHUB, create a new profile dedicated to your target application.
@@ -17,7 +17,7 @@
 
   + Should your chosen combination involve the primary mouse button, and you've chosen to disable it within the new profile, ensure you have an alternative means, such as a trusty touchpad, to execute a primary click. This precautionary step can prevent unintended computer sorcery since most users aren't versed in the arcane art of pure keyboard control.
 
-+ ### **How to Test or Debug Your Configurations:question:**
++ ### **How to Test or Debug Your Configurations**:question:
   The most straightforward method is to activate your script within a profile and observe the actions of your mouse. However, due to the potential impact of improper configurations, we recommend testing the framework using the [simulator](src/debug/simulator.lua) if you possess expertise in Lua. For further guidance, refer to an [example](src/example/console-debug.lua). To add a touch of precision to your tests, consider documenting your operations in [operations.txt](src/example/operations.txt). This not only enhances your debugging prowess but also adds an air of scholarly meticulousness to your work.
 
 ## **:star2:Documentation:star2:**
@@ -33,26 +33,26 @@
 + ### **Best Practices** :book:
   To keep your spellbook clean and avoid unexpected hiccups, it's wise to adhere to the following standards:
 
-  1. ***No Duplicate Buttons in Combination*** :x:  
-    Obviously, you can't press a button that's already being pressed - it's like trying to high-five yourself. So, such events are a no-go in the realm of real applications.
+  1. ***No Duplicate Buttons in Combination*** :x:
+    Obviously, you can't press a button that's already being pressed - it's like trying to high-five yourself. So, such events are a no-go in the realm of real applications, and the framework will warn you with a message in the console of Logitech GHUB's script editor (using the API function `OutputLogMessage`) if you believe in the impossible.
 
-  2. ***Avoid Registering the Same Combination Multiple Times*** :x:  
-    If you're caught in a time loop and register a combination multiple times, only the latest incantation will take effect. The others shall remain in the mists of history.
+  2. ***Avoid Registering the Same Combination Multiple Times*** :x:
+    If you're caught in a time loop and register a combination multiple times, only the latest incantation will take effect. The others shall remain in the mists of history. However, to remind you of such mishaps, the framework is thoughtful enough to warn you with details in the console, so **remember to check the console** to avoid any confusion.
 
-  3. ***Exercise Caution with Pressed Events for Non-Leaf Combinations*** :heavy_exclamation_mark:  
-    Non-leaf combinations can potentially have pressed events, but beware. Since the framework can't predict if more buttons will join the party when the registered combination is pressed, the pressed event will always ignite, even if you're merely performing a combination that serves as its precursor.
+  3. ***Exercise Caution with Pressed Events for Non-Leaf Combinations*** :heavy_exclamation_mark:
+    Non-leaf combinations can potentially have pressed events, but beware. Since the framework can't predict if more buttons will join the party when the registered combination is pressed, the pressed event will always ignite, even if it's actually the prefix of what you intended to trigger.
 
-  4. ***Prefer Registering Released-Only Events When Possible*** :heavy_check_mark:  
-    As hinted earlier, released-only events are the agile acrobats of the framework. If you don't require the initial button press, they offer more flexibility. So, if you can do without the "press", it's always wiser to go for the "release-only" option.
+  4. ***Prefer Registering Released-Only Events When Possible*** :heavy_check_mark:
+    As hinted earlier, released-only events are the agile acrobats of the framework. If your action doesn't require holding for special effects or continuous triggering, it's always wiser to go for the "release-only" option.
 
 + ### **Globals** :globe_with_meridians:
-  1. #### ***Action***  
+  1. #### ***Action***
       This is a treasure trove of actions bestowed upon us by the G-series Lua API. Each action comes with its own introduction, conveniently written as comments, and their functions are usually self-evident from their names. In most cases, users can employ the provided register methods without delving into the nitty-gritty details.
 
-  2. #### ***Button***  
+  2. #### ***Button***
       Behold, the esteemed collection of mouse buttons. In the intricate GHUB API, mouse buttons are assigned cryptic integers, making them hard to remember. Here, each button is graced with a name that carries meaning, making registration a breeze. It's like giving your mouse buttons name tags at a party - they become far easier to recognize.
 
-  3. #### ***Settings***  
+  3. #### ***Settings***
       Within this domain, there are two paramount settings that command your attention:
 
       - **Mouse Model**
@@ -82,7 +82,7 @@
       This is the heart and soul of the framework, a sanctuary for custom handlers. For most users, it's like the hidden treasure chest beyond the known map, reserved for special behaviors that venture beyond the usual. In most cases, it remains untouched, serving as a secret vault that only a select few dare to explore. You'll find more insights into its secrets in the [example](src/example/console-debug.lua).
 
 + ### **Registration** :pencil:
-  In most cases, your journey will primarily revolve around registrations. Here are some of the commonly used methods:
+  In most cases, your journey will primarily revolve around registrations, which involves mostly the following methods. There are also other methods available for advanced uses, please refer to the code docs for more information.
 
   1. #### ***RegisterBind***
       ```lua
@@ -95,7 +95,7 @@
 
       ***`sequence`:*** This indicates the sequence of functional mouse buttons and keyboard keys that are bound to the combination of physical mouse buttons.
 
-      ***`unorderedGroups`:*** By default, the *combination* is expected to be sequential. For example, if you register `"12"` but press mouse button 2 before 1, thereby forming the sequence `"21"`, the registered actions won't be executed. If the order of some buttons in the combination doesn't matter, you can employ this parameter. If the entire combination should be considered unordered, assign the string `"all"` to this parameter. If only a portion of the combination should be unordered, list those portions as a table. If multiple sections of the combination are unordered separately, list all the parts and encapsulate them as a table. For a clearer understanding, refer to the examples provided below.
+      ***`unorderedGroups`:*** By default, the *combination* is expected to be sequential. For example, if you register `"12"` but press mouse button 2 before 1, thereby forming the sequence `"21"`, the registered actions won't be executed. If the order of some buttons in the combination doesn't matter, you can employ this parameter. If the entire combination should be considered unordered, assign the string `"all"` to this parameter. If only a portion of the combination should be unordered, list those portions as a table. If multiple sections of the combination are unordered separately, list all the parts and encapsulate them as a table. For a clearer understanding, refer to the examples provided below. Also, any invalid value (e.g. wrong type, inclusion of buttons not present in `combination`) passed to this parameter will be disgarded (and a warning describing the issue will be output to the Logitech GHUB's console).
 
       ***Examples:***
       ```lua
@@ -134,7 +134,7 @@
 
       ***`sequence`:*** This denotes the sequence of functional mouse buttons and keyboard keys. To distinguish between sequential and nested modes, a table structure is introduced. The first level operates in a nested manner, the second operates sequentially, and so on. For detailed examples, please refer to the provided demonstrations.
 
-      ***`unorderedGroups`:*** Identical to the earlier explanation.
+      ***`unorderedGroups`:*** Same as previously described.
 
       ***Examples:***
       ```lua
@@ -175,4 +175,4 @@
 
       ***`macroName`:*** This field requires the name of the macro to be executed.
 
-      ***`unorderedGroups`:*** Identical to the earlier explanation.
+      ***`unorderedGroups`:*** Same as previously described.
