@@ -841,6 +841,12 @@ function OnEvent(event, arg)
 			handler()
 		end
 	elseif event == RawEvent.Deactivated then
+		local buttons = KeyCombination.PressedButtons
+		if #buttons > 0 then
+			for i = #buttons, 1, -1 do
+				KeyCombination:ReleaseButton(DecodeButton(buttons:at(i)))
+			end
+		end
 		for _, handler in ipairs(DeactivationHandlers) do
 			handler()
 		end
