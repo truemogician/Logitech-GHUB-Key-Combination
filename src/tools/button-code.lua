@@ -5,6 +5,9 @@ RawEvent = {
 	Deactivated = "PROFILE_DEACTIVATED",
 }
 
+EnablePrimaryMouseButtonEvents(true)
+
+---Handling function to be called by GHUB when a raw event fires
 ---@param event string
 ---@param arg integer
 function OnEvent(event, arg)
