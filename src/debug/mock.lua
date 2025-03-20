@@ -62,6 +62,25 @@ function MoveMouseToVirtual(x, y)
 	OutputLogMessage("Move cursor to (%d, %d) in virtual desktop\n", x, y)
 end
 
+---@param table integer[] DPI table
+---@param index integer? Index of the DPI table
+function SetMouseDPITable(table, index)
+    OutputLogMessage("Set mouse DPI table to ( ")
+    for _, v in ipairs(table) do
+        OutputLogMessage("%d ", v)
+    end
+    OutputLogMessage(")")
+    if index then
+        OutputLogMessage(" at index %d", index)
+    end
+    OutputLogMessage("\n")
+end
+
+---@param index integer Index of the DPI table
+function SetMouseDPITableIndex(index)
+	OutputLogMessage("Set mouse DPI table index to %d\n", index)
+end
+
 function AbortMacro()
 	OutputLogMessage("Abort playing macro\n")
 end

@@ -335,6 +335,29 @@ Action = {
 				end
 			end
 		end,
+    },
+    DPI = {
+		---Set DPI Table of the mouse
+		---@param table integer[] Table of DPI values
+		---@param index integer? Index of the DPI value to be set
+		---@return function
+		SetTable = function(self, table, index)
+			return function()
+				if index then
+					SetMouseDPITable(table, index)
+				else
+					SetMouseDPITable(table)
+				end
+			end
+        end,
+        ---Set DPI Table index of the mouse
+        ---@param index integer Index of the DPI table
+        ---@return function
+		SetTableIndex = function(self, index)
+			return function()
+				SetMouseDPITableIndex(index)
+			end
+		end
 	},
 	Macro = {
 		---Other playing macros will be aborted if this is set to true
