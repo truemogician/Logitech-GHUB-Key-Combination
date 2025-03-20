@@ -9,20 +9,20 @@
 ---@alias ActionSequence (MouseKeyboardDelay|ActionSequence)[]
 ---@alias Handler fun(self:ConfiguredHandler, event:"press"|"release", button:integer, pressedButtons:integer[])
 
----@alias char string @string whose length is 1
+---@alias char string string whose length is 1
 
 ---@class EventAction
----@field Pressed fun() @Function to be called when key combination is pressed
----@field Released fun() @Function to be called when key combination is released
+---@field Pressed fun() Function to be called when key combination is pressed
+---@field Released fun() Function to be called when key combination is released
 
 ---@class Event
 ---@field Action EventAction
----@field IsLeaf boolean @Indicate whether this event is a leaf event
+---@field IsLeaf boolean Indicate whether this event is a leaf event
 
 ---@class ConfiguredHandler
 ---@field TriggerTime "pre"|"post"
 ---@field Handle Handler
----@field Instrument any @Contains instrumental variable
+---@field Instrument any Contains instrumental variable
 
 --#endregion
 
@@ -138,7 +138,7 @@ end
 Action = {
 	Debug = {
 		---Print message to GHUB script console
-		---@vararg any @messages to be printed
+		---@vararg any messages to be printed
 		---@return function
 		Print = function(self, ...)
 			local args = { ... }
@@ -160,7 +160,7 @@ Action = {
 	},
 	KeysAndButtons = {
 		---Press buttons and keys in a sequence
-		---@param keysAndButtons MouseKeyboardDelay[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons MouseKeyboardDelay[] Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
 		Press = function(self, keysAndButtons)
 			return function()
@@ -178,7 +178,7 @@ Action = {
 			end
 		end,
 		---Release buttons and keys in a sequence
-		---@param keysAndButtons MouseKeyboardDelay[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
+		---@param keysAndButtons MouseKeyboardDelay[] Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay.
 		---@return function
 		Release = function(self, keysAndButtons)
 			return function()
@@ -196,7 +196,7 @@ Action = {
 			end
 		end,
 		---Press or release buttons and keys in a sequence
-		---@param keysAndButtons MouseKeyboardDelay[] @Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
+		---@param keysAndButtons MouseKeyboardDelay[] Number represents mouse buttons, string for keyboard keys, and string starting with "#" for delay. Keys or buttons will be pressed when they first appear, and will be released the second time they appear.
 		---@return function
 		PressAndRelease = function(self, keysAndButtons)
 			return function()
@@ -229,7 +229,7 @@ Action = {
 			end
 		end,
 		---Click buttons and keys sequentially or nestedly
-		---@param keysAndButtons ActionSequence @Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
+		---@param keysAndButtons ActionSequence Array consisting of numbers, strings and tables. Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay. Numbers and strings within tables will be pressed and released in a different way.
 		---@return function
 		Click = function(self, keysAndButtons)
 			local function ClickRecursively(target, depth)
@@ -283,7 +283,7 @@ Action = {
 	},
 	Wheel = {
 		---Scroll mouse wheel up
-		---@param count integer @Number of clicks
+		---@param count integer Number of clicks
 		---@return function
 		ScrollUp = function(self, count)
 			return function()
@@ -291,7 +291,7 @@ Action = {
 			end
 		end,
 		---Scroll mouse wheel down
-		---@param count integer @Number of clicks
+		---@param count integer Number of clicks
 		---@return function
 		ScrollDown = function(self, count)
 			return function()
@@ -305,8 +305,8 @@ Action = {
 		---Resolution of the screen
 		Resolution = { Width = 1920, Height = 1080 },
 		---Move cursor by some pixels
-		---@param x integer @Number of pixels horizontally
-		---@param y integer @Number of pixels vertically
+		---@param x integer Number of pixels horizontally
+		---@param y integer Number of pixels vertically
 		---@return function
 		Move = function(self, x, y)
 			return function()
@@ -321,8 +321,8 @@ Action = {
 			end
 		end,
 		---Move cursor to certian position
-		---@param x integer @Abscissa of the position
-		---@param y integer @Ordinate of the positoin
+		---@param x integer Abscissa of the position
+		---@param y integer Ordinate of the positoin
 		---@return function
 		MoveTo = function(self, x, y)
 			return function()
@@ -341,7 +341,7 @@ Action = {
 		---@type boolean
 		AbortBeforePlay = false,
 		---Play macro
-		---@param macroName string @Name of the macro
+		---@param macroName string Name of the macro
 		---@return function
 		Play = function(self, macroName)
 			return function()
@@ -354,7 +354,7 @@ Action = {
 	},
 	Delay = {
 		---Sleep for some time
-		---@param duration integer @Number of millisecond to sleep
+		---@param duration integer Number of millisecond to sleep
 		---@return function
 		Sleep = function(self, duration)
 			return function()
@@ -389,7 +389,7 @@ function DecodeButton(buttonCode)
 end
 
 ---@param list any[]
----@return boolean @Return false if list is currently the last permutation
+---@return boolean Return false if list is currently the last permutation
 local function NextPermutation(list)
 	local length = #list
 	local k, l = 0, 0
@@ -431,9 +431,9 @@ KeyCombination = {
 		Current = {},
 
 		---Register an event
-		---@param combination integer[] @Sequence of mouse buttons
-		---@param action EventAction @Action to be performed when the event fires
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer[] Sequence of mouse buttons
+		---@param action EventAction Action to be performed when the event fires
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		Register = function(self, combination, action, unorderedGroups)
 			for i = 1, #combination do
 				if type(combination[i]) ~= "number" then
@@ -576,9 +576,9 @@ KeyCombination = {
 		end,
 
 		---Register an event firing when pressed
-		---@param combination integer|integer[] @Sequence of mouse buttons
-		---@param action fun()|fun()[] @An action or a list of actions to be performed when the event fires
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer|integer[] Sequence of mouse buttons
+		---@param action fun()|fun()[] An action or a list of actions to be performed when the event fires
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		RegisterPressed = function(self, combination, action, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -597,9 +597,9 @@ KeyCombination = {
 		end,
 
 		---Register an event firing when released
-		---@param combination integer|integer[] @Sequence of mouse buttons
-		---@param action fun()|fun()[] @An action or a list of actions to be performed when the event fires
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer|integer[] Sequence of mouse buttons
+		---@param action fun()|fun()[] An action or a list of actions to be performed when the event fires
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		RegisterReleased = function(self, combination, action, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -618,10 +618,10 @@ KeyCombination = {
 		end,
 
 		---Register both pressed and released events
-		---@param combination integer|integer[] @Sequence of mouse buttons
-		---@param pAction fun()|fun()[] @An action or a list of actions to be performed on pressed
-		---@param rAction fun()|fun()[] @An action or a list of actions to be performed on released
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer|integer[] Sequence of mouse buttons
+		---@param pAction fun()|fun()[] An action or a list of actions to be performed on pressed
+		---@param rAction fun()|fun()[] An action or a list of actions to be performed on released
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		RegisterPressedAndReleased = function(self, combination, pAction, rAction, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -643,9 +643,9 @@ KeyCombination = {
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Pressing actions will be registered to pressed event, and so is releasing.
-		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param sequence MouseKeyboardDelay|ActionSequence @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer|integer[] Mouse buttons combinations
+		---@param sequence MouseKeyboardDelay|ActionSequence Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		RegisterBind = function(self, combination, sequence, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -665,9 +665,9 @@ KeyCombination = {
 		end,
 
 		---Register a mapping from a mouse buttons sequence to a sequence of keys and buttons actions. Clicking actions will be registered to released event.
-		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param sequence MouseKeyboardDelay|ActionSequence @Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer|integer[] Mouse buttons combinations
+		---@param sequence MouseKeyboardDelay|ActionSequence Number represents mouse buttons, string for keyboard keys and string starting with "#" for delay.
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		RegisterReleasedBind = function(self, combination, sequence, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -681,9 +681,9 @@ KeyCombination = {
 		end,
 
 		---Register a macro playing action to released event
-		---@param combination integer|integer[] @Mouse buttons combinations
-		---@param macroName string @Name of the macro
-		---@param unorderedGroups? integer[]|integer[][]|"all" @Order of the buttons within the table will be ignored.
+		---@param combination integer|integer[] Mouse buttons combinations
+		---@param macroName string Name of the macro
+		---@param unorderedGroups? integer[]|integer[][]|"all" Order of the buttons within the table will be ignored.
 		RegisterReleasedMacro = function(self, combination, macroName, unorderedGroups)
 			if (type(combination) == "number") then
 				combination = { combination }
@@ -699,8 +699,8 @@ KeyCombination = {
 	CustomHandlers = {},
 
 	---Add handlers to be triggered before the main handler
-	---@param handler Handler @The handling function
-	---@param instrument? any @Instrumental variables for handler to use
+	---@param handler Handler The handling function
+	---@param instrument? any Instrumental variables for handler to use
 	AddPreHandler = function(self, handler, instrument)
 		self.CustomHandlers[#self.CustomHandlers + 1] = {
 			TriggerTime = "pre",
@@ -710,8 +710,8 @@ KeyCombination = {
 	end,
 
 	---Add handlers to be triggered after the main handler
-	---@param handler Handler @The handling function
-	---@param instrument? any @Instrumental variables for handler to use
+	---@param handler Handler The handling function
+	---@param instrument? any Instrumental variables for handler to use
 	AddPostHandler = function(self, handler, instrument)
 		self.CustomHandlers[#self.CustomHandlers + 1] = {
 			TriggerTime = "post",

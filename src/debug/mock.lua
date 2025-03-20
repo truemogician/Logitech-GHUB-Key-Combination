@@ -50,14 +50,14 @@ function MoveMouseRelative(x, y)
 	OutputLogMessage("Move cursor by (%d, %d) relatively\n", x, y)
 end
 
----@param x integer @Abscissa
----@param y integer @Ordinate
+---@param x integer Abscissa
+---@param y integer Ordinate
 function MoveMouseTo(x, y)
 	OutputLogMessage("Move cursor to (%d, %d)\n", x, y)
 end
 
----@param x integer @Abscissa
----@param y integer @Ordinate
+---@param x integer Abscissa
+---@param y integer Ordinate
 function MoveMouseToVirtual(x, y)
 	OutputLogMessage("Move cursor to (%d, %d) in virtual desktop\n", x, y)
 end
